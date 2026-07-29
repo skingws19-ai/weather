@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>국내사업부 주요거점 폭염 현황</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{
+  --hd:#FFFFCC;          /* 표 헤더 연노랑 (원본 FFFFCC) */
+  --bd:#000;             /* 표 테두리 */
+  --red:#C00000;         /* 폭염특보 적색 (원본) */
+  --navy:#1f3864; --line:#d8dee8; --bg:#eef1f6; --mut:#6b7688; --txt:#1c2534;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"맑은 고딕","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+  background:var(--bg);color:var(--txt);font-size:13px}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:5px;font-size:12.5px;padding:7px 13px}
+input,select,textarea{font-family:inherit;font-size:13px;border:1px solid var(--line);
+  border-radius:5px;padding:7px 9px;width:100%;background:#fff}
+select{cursor:pointer}
+
+/* ═══════════ 로그인 ═══════════ */
+#login{position:fixed;inset:0;background:linear-gradient(160deg,#1f3864,#2f5597);
+  display:flex;align-items:center;justify-content:center;z-index:200}
+#login .box{background:#fff;border-radius:12px;padding:34px 34px 28px;width:360px;
+  box-shadow:0 18px 50px rgba(0,0,0,.3)}
+#login h1{font-size:17px;color:var(--navy);text-align:center;margin-bottom:4px}
+#login .sub{font-size:12px;color:var(--mut);text-align:center;margin-bottom:22px}
+#login label{display:block;font-size:12px;font-weight:700;color:var(--mut);margin:14px 0 5px}
+#login button{width:100%;margin-top:20px;background:var(--navy);color:#fff;padding:11px;font-size:14px;font-weight:700}
+#login button:hover{background:#2f5597}
+#login button.adm{background:#fff;color:var(--navy);border:1px solid #c3cede;margin-top:9px;
+  padding:9px;font-size:12.5px;font-weight:600}
+#login button.adm:hover{background:#eef2f7}
+#login .err{color:var(--red);font-size:12px;margin-top:10px;text-align:center;min-height:16px}
+#login .cr{text-align:center;font-size:10.5px;color:#9aa3b2;margin-top:16px}
+#admPane{display:none}
+#admPane .note{font-size:11.5px;color:var(--mut);margin-top:9px;line-height:1.6}
+.crTop{font-size:11px;color:rgba(255,255,255,.62);white-space:nowrap;letter-spacing:.2px}
+
+/* ═══════════ 상단바 ═══════════ */
+.top{background:var(--navy);color:#fff;padding:9px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top b{font-size:15px}
+.top .me{font-size:12px;background:rgba(255,255,255,.16);padding:4px 11px;border-radius:20px}
+.top .sp{flex:1}
+.top button{background:rgba(255,255,255,.15);color:#fff;font-weight:600}
+.top button:hover{background:rgba(255,255,255,.28)}
+
+.wrap{max-width:1300px;margin:0 auto;padding:14px 18px 50px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:12px}
+#netBar{background:#fdf5e3;border:1px solid #e6cf9b;border-left:4px solid #b7791f;
+  border-radius:7px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;color:#6d4c11;
+  line-height:1.7;gap:9px;align-items:flex-start}
+#netBar::before{content:'⚠';font-size:15px;flex:0 0 auto}
+#netBar b{color:#8a5a08}
+.p-hd{padding:7px 13px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;
+  color:var(--navy);display:flex;align-items:center;gap:8px;background:#f7f9fc;border-radius:8px 8px 0 0}
+.p-hd .sp{flex:1}
+.p-hd .t{font-size:11px;font-weight:400;color:var(--mut)}
+.p-hd button{padding:4px 10px;font-size:11.5px;background:#eef2f7;color:var(--navy);font-weight:700}
+.p-hd button:hover{background:#dde5f0}
+
+/* 전국 현황 + 주간예보 */
+.strip{display:flex;gap:0;flex-wrap:wrap}
+.nat{flex:0 0 300px;padding:10px 13px;border-right:1px solid var(--line)}
+.nat .big{font-size:12.5px;line-height:1.7}
+.nat .big b{color:var(--navy)}
+.cities{display:flex;gap:14px;margin-top:7px;font-size:12px}
+.cities div{text-align:center}
+.cities .c-n{font-size:11px;color:var(--mut)}
+.cities .c-t{font-weight:700;font-size:14px}
+.week{flex:1;display:flex;min-width:420px}
+.wd{flex:1;text-align:center;padding:8px 3px;border-right:1px dashed var(--line);font-size:11.5px}
+.wd:last-child{border-right:none}
+.wd .d{color:var(--mut);font-size:11px}
+.wd .i{font-size:19px;line-height:1.3}
+.wd .t{font-weight:600}
+.wd .t .mx{color:#c0392b} .wd .t .mn{color:#2563a8}
+.wd .p{color:#2563a8;font-size:10.5px}
+.wd.sat .d{color:#2563a8} .wd.sun .d{color:#c0392b}
+
+/* 거점 현재 기상 스트립 */
+.sites{display:flex;flex-wrap:wrap}
+.st{flex:1;min-width:118px;text-align:center;padding:9px 4px;border-right:1px dashed var(--line)}
+.st:last-child{border-right:none}
+.st .n{font-size:11.5px;font-weight:700;color:var(--navy)}
+.st .i{font-size:20px;line-height:1.35}
+.st .t{font-size:15px;font-weight:700}
+.st .f{font-size:11px;color:var(--mut)}
+.st .f b{color:#c0392b;font-size:12px}
+.st.hot{background:#fdecea}
+.st.warn{background:#fdf5e3}
+
+/* ═══════════ 표 (원본 서식) ═══════════ */
+#sheet{background:#fff;padding:16px 20px 12px;border:1px solid var(--line);border-radius:8px;overflow-x:auto}
+#sheet .ttl{font-size:14pt;font-weight:700;margin-bottom:9px;font-family:"맑은 고딕",sans-serif}
+table.rep{border-collapse:collapse;table-layout:fixed;width:100%;min-width:1090px;
+  font-family:"맑은 고딕",sans-serif}
+table.rep col.c-b{width:104px}
+table.rep td{border:1px solid var(--bd);text-align:center;vertical-align:middle;
+  font-size:12pt;padding:3px 4px;word-break:break-word;white-space:pre-wrap;line-height:1.35}
+table.rep td.hd{background:var(--hd);font-weight:700}
+table.rep td.hd.dt{font-size:14pt}
+table.rep tr.r-h td{height:34px}
+table.rep tr.r-b td{height:46px}
+table.rep td.alert{color:var(--red);font-weight:700}
+table.rep td.note{font-size:11pt}
+table.rep td.etc{text-align:left;vertical-align:top;font-size:12pt;padding:6px 8px;height:64px}
+table.rep td.edit{cursor:pointer;background:#fffdf2}
+table.rep td.edit:hover{background:#fff6d6;outline:2px solid #e8c85a;outline-offset:-2px}
+table.rep td.locked{background:#fff}
+.foot-note{font-size:10pt;margin-top:3px;font-family:"맑은 고딕",sans-serif}
+
+.bar{display:flex;gap:8px;align-items:center;margin:12px 0 0;flex-wrap:wrap}
+.bar button{background:#fff;border:1px solid var(--line);color:var(--txt);font-weight:600}
+.bar button:hover{background:#f0f4fa}
+.bar button.pri{background:var(--navy);color:#fff;border-color:var(--navy)}
+.bar button.pri:hover{background:#2f5597}
+/* 복사 · 사진 다운로드 · 엑셀 다운로드 — 동일 크기/간격 */
+.bar button.act{min-width:136px;text-align:center}
+.bar button.act:disabled{opacity:.6;cursor:default}
+.bar button.act.done{background:#e8f6ee;border-color:#9fd6b8;color:#1f9254}
+.bar .sp{flex:1}
+.bar select{width:auto;min-width:150px}
+.tip{font-size:11.5px;color:var(--mut);padding:6px 2px}
+
+/* 편집 모달 */
+.mbg{position:fixed;inset:0;background:rgba(15,25,42,.55);z-index:150;display:none;
+  align-items:center;justify-content:center;padding:20px}
+.mbg.on{display:flex}
+.mdl{background:#fff;border-radius:10px;width:100%;max-width:520px;overflow:hidden}
+.mdl .h{background:var(--navy);color:#fff;padding:13px 17px;font-size:14px;font-weight:700;display:flex}
+.mdl .h .x{margin-left:auto;background:none;color:#fff;font-size:18px;padding:0 4px}
+.mdl .b{padding:16px 18px}
+.mdl .b textarea{min-height:110px;line-height:1.6;resize:vertical}
+.mdl .b .q{font-size:11.5px;color:var(--mut);margin-top:8px}
+.mdl .b .quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.mdl .b .quick button{background:#eef2f7;color:var(--navy);font-size:11.5px;padding:5px 10px}
+.mdl .f{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;background:#fafbfd}
+.mdl .f .sp{flex:1}
+.mdl .f .sv{background:var(--navy);color:#fff;font-weight:700;padding:9px 20px}
+.mdl .f .cc{background:#eef1f5;padding:9px 18px}
+
+/* 로그 */
+#logView{display:none;max-height:320px;overflow:auto}
+#logView table{width:100%;border-collapse:collapse;font-size:11.5px}
+#logView th{background:#f2f5f9;position:sticky;top:0;padding:6px 8px;text-align:left;border-bottom:1px solid var(--line)}
+#logView td{padding:5px 8px;border-bottom:1px solid #eef1f5}
+#logView td.o{color:var(--mut);text-decoration:line-through;font-size:11px}
+
+@media print{ .top,.bar,.panel,.tip,#logView{display:none!important}
+  body{background:#fff} .wrap{padding:0} #sheet{border:none;padding:0} }
+</style>
+</head>
+<body>
+
+<!-- ══════ 로그인 ══════ -->
+<div id="login">
+  <div class="box">
+    <h1>국내사업부 주요거점 폭염 현황</h1>
+
+    <!-- 일반 로그인 -->
+    <div id="usrPane">
+      <div class="sub">소속 거점을 선택하고 이름을 입력하세요</div>
+      <label>소속</label>
+      <select id="lgSite"></select>
+      <label>이름</label>
+      <input id="lgName" placeholder="성명 입력" onkeydown="if(event.key==='Enter')doLogin()">
+      <button onclick="doLogin()">로그인</button>
+      <button class="adm" onclick="showAdm(true)">🔑 관리자 접속</button>
+    </div>
+
+    <!-- 관리자 접속 -->
+    <div id="admPane">
+      <div class="sub">관리자 접속코드를 입력하세요</div>
+      <label>접속코드</label>
+      <input id="lgCode" type="password" placeholder="접속코드 입력"
+             onkeydown="if(event.key==='Enter')doAdmin()">
+      <button onclick="doAdmin()">접속</button>
+      <button class="adm" onclick="showAdm(false)">← 일반 로그인으로</button>
+    </div>
+
+    <div class="err" id="lgErr"></div>
+    <div class="cr">©2026 김원상 All rights reserved.</div>
+  </div>
+</div>
+
+<!-- ══════ 상단바 ══════ -->
+<div class="top" id="topbar" style="display:none">
+  <b>국내사업부 주요거점 폭염 현황</b>
+  <span class="me" id="meTag"></span>
+  <span id="dbTag" style="font-size:11.5px"></span>
+  <span class="sp"></span>
+  <button onclick="toggleLog()" id="btnLog">📋 로그</button>
+  <button onclick="logout()">로그아웃</button>
+  <span class="crTop">©2026 김원상 All rights reserved.</span>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+
+  <div id="netBar" style="display:none"></div>
+
+  <!-- 전국 현황 + 주간예보 -->
+  <div class="panel">
+    <div class="p-hd">
+      <span>전국 날씨현황 · 주간예보</span>
+      <span class="t" id="natTime"></span>
+      <span class="sp"></span>
+      <button onclick="refreshNow()">↻ 새로고침</button>
+    </div>
+    <div class="strip">
+      <div class="nat">
+        <div class="big" id="natSummary">—</div>
+        <div class="cities" id="natCities"></div>
+      </div>
+      <div class="week" id="week"></div>
+    </div>
+  </div>
+
+  <!-- 거점 현재 기상 -->
+  <div class="panel">
+    <div class="p-hd"><span>거점별 현재 기상 · 체감온도</span>
+      <span class="t" id="siteTime"></span><span class="sp"></span>
+      <button onclick="refreshNow()">↻ 새로고침</button></div>
+    <div class="sites" id="siteStrip"></div>
+  </div>
+
+  <!-- 로그 -->
+  <div class="panel" id="logView">
+    <div class="p-hd"><span>입력 로그</span><span class="sp"></span>
+      <button onclick="downloadLog()">↓ CSV 다운로드</button>
+      <button onclick="toggleLog()">닫기</button></div>
+    <div id="logBody"></div>
+  </div>
+
+  <!-- 표 -->
+  <div id="sheet">
+    <div class="ttl">■ 국내사업부 주요거점 폭염 현황</div>
+    <div id="tblBox"></div>
+    <div class="foot-note">※ 폭염특보 : 없음 / 주의보 / 경보 / 중대경보</div>
+  </div>
+
+  <div class="bar">
+    <select id="dateSel" onchange="loadDate(this.value)"></select>
+    <button onclick="lock14()" id="btn14">🕑 14시 기준 갱신</button>
+    <span class="sp"></span>
+    <button class="act" id="btnCopy" onclick="copyImg()">📋 복사</button>
+    <button class="act" id="btnShot" onclick="capture()">📷 사진 다운로드</button>
+    <button class="act pri" onclick="toXlsx()">⬇ 엑셀 다운로드</button>
+  </div>
+  <div class="tip" id="tip"></div>
+</div>
+
+<!-- 편집 모달 -->
+<div class="mbg" id="mbg">
+  <div class="mdl">
+    <div class="h"><span id="mTtl"></span><button class="x" onclick="closeM()">×</button></div>
+    <div class="b">
+      <textarea id="mTx" placeholder="특이사항을 입력하세요"></textarea>
+      <div class="quick">
+        <button onclick="qk('특이사항 없음')">특이사항 없음</button>
+        <button onclick="qk('작업 간 휴식 제공 중')">작업 간 휴식 제공 중</button>
+        <button onclick="qk('옥외작업 일시 중단')">옥외작업 일시 중단</button>
+      </div>
+      <div class="q" id="mQ"></div>
+    </div>
+    <div class="f"><span class="sp"></span>
+      <button class="cc" onclick="closeM()">취소</button>
+      <button class="sv" onclick="saveM()">저장</button></div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   1. 마스터 데이터
+   ════════════════════════════════════════════════════════════ */
+// 표 컬럼 순서 (원본 엑셀과 동일)
+//  nx,ny  : 기상청 단기예보 격자좌표
+//  stn    : 기상특보 발표관서 코드 (109 서울·경기 / 133 대전·충남 / 146 전북 / 159 부산·경남)
+//  area   : 특보 통보문에 쓰이는 시·군명 (폭염특보 자동 매칭용)
+//  wide   : 시·군이 안 잡힐 때 쓰는 광역 키워드
+//  nx,ny : 기상청 격자좌표 / stn : 특보 발표관서 / area : 특보문 시·군명 / wide : 광역명
+const SITES=[
+ {id:'gunsan',   name:'군산',     nx:56,ny:92, stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도']},
+ {id:'janghang', name:'장항',     nx:55,ny:94, stn:133, area:['서천'], wide:['충남','충청남도']},
+ {id:'daejeon',  name:'대전',     nx:67,ny:100,stn:133, area:['대전'], wide:['대전']},
+ {id:'cheonan',  name:'천안',     nx:63,ny:110,stn:133, area:['천안'], wide:['충남','충청남도']},
+ {id:'sintanjin',name:'신탄진',   nx:68,ny:100,stn:133, area:['대전'], wide:['대전']},
+ {id:'busanNP',  name:'부산신항', nx:96,ny:74, stn:159, area:['부산'], wide:['부산']},
+ {id:'stjCY',    name:'신탄진 CY',nx:68,ny:100,stn:133, area:['대전'], wide:['대전']},
+ {id:'gsCY',     name:'군산 CY',  nx:56,ny:92, stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도']},
+ {id:'asanCY',   name:'아산 CY',  nx:60,ny:110,stn:133, area:['아산'], wide:['충남','충청남도']},
+ {id:'uiwang',   name:'의왕',     nx:61,ny:121,stn:109, area:['의왕'], wide:['경기','경기도']}
+];
+const ALERT_LV=['없음','주의보','경보','중대경보'];
+const HQ={id:'HQ',name:'국내사업부장'};
+// 로그인 드롭다운 : 국내사업부장 최상단 + 나머지 가나다순
+const LOGIN_LIST=[HQ, ...SITES.slice().sort((a,b)=>a.name.localeCompare(b.name,'ko'))];
+const ROWS=[{k:'worker',label:'근로자'},{k:'facility',label:'제품 (시설)'},{k:'transport',label:'운송'}];
+const CITIES=[{n:'서울',nx:60,ny:127},{n:'대전',nx:67,ny:100},{n:'부산',nx:98,ny:76}];
+
+/* ── 공공데이터포털 인증키 (기상청 단기예보·중기예보·기상특보 공통) ──
+   ※ 이 파일을 여는 사람은 소스보기로 키를 확인할 수 있습니다.
+      외부 공유 시에는 키를 지우고 배포하세요.                        */
+const API_KEY='7715b3bacfda3f6759e8b5b6fa525223a3c7fc08c673a8d28252cd6116ff4e1b';
+/* 중계 경로 — 공공데이터포털은 브라우저 직접 호출(CORS)을 막습니다.
+   웹서버(Vercel 등)에 올린 경우에는 서버쪽 중계함수 /api/kma 를 거칩니다.
+   파일을 그냥 열면(file://) 중계가 없으므로 데모 데이터로 자동 전환됩니다. */
+const API_PROXY=(location.protocol==='http:'||location.protocol==='https:') ? '/api/kma' : '';
+
+/* ── 공용 저장소 (Firebase Realtime Database) ──────────────────
+   모든 거점이 같은 표를 보도록 입력값을 여기에 모읍니다.
+   연결이 안 되면 자동으로 이 브라우저 저장소만 쓰고, 복구되면 다시 올립니다. */
+const FB='https://weather-5eb52-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+const K={db:'heatDB',log:'heatLOG',cfg:'heatCFG',ses:'heatSES'};
+let DB={}, LOG=[], SES=null;
+let CFG={key:API_KEY, proxy:API_PROXY, mode:'live'};
+let NETFAIL=null, NETFAIL_MSG='';        // 실시간 조회 실패 사유
+let VIEW=null;              // 현재 조회중인 날짜 YYYY-MM-DD
+let LIVE={sites:{},cities:{},week:[],at:null};   // 실시간(현재) 기상
+
+const S={g:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+         s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+/* ════════════════════════════════════════════════════════════
+   2. 체감온도 / 기상 코드
+   ════════════════════════════════════════════════════════════ */
+// 기상청 여름철 체감온도 (습구온도 Stull 근사식 기반)
+function feelsSummer(ta,rh){
+  const tw = ta*Math.atan(0.151977*Math.pow(rh+8.313659,0.5))
+           + Math.atan(ta+rh) - Math.atan(rh-1.676331)
+           + 0.00391838*Math.pow(rh,1.5)*Math.atan(0.023101*rh) - 4.686035;
+  return -0.2442 + 0.55399*tw + 0.45535*ta - 0.0022*tw*tw + 0.00278*tw*ta + 3.0;
+}
+// 겨울철 체감온도 (풍속 냉각지수)
+function feelsWinter(ta,wsd){
+  const v=Math.pow(wsd*3.6,0.16);
+  if(wsd*3.6<4.8) return ta;
+  return 13.12 + 0.6215*ta - 11.37*v + 0.3965*ta*v;
+}
+function feels(ta,rh,wsd){
+  const m=new Date().getMonth()+1;
+  const f=(m>=5&&m<=9)?feelsSummer(ta,rh):feelsWinter(ta,wsd);
+  return Math.round(f*10)/10;
+}
+const SKYT={1:'맑음',3:'구름많음',4:'흐림'};
+const PTYT={0:'',1:'비',2:'비/눈',3:'눈',5:'빗방울',6:'진눈깨비',7:'눈날림'};
+function skyText(sky,pty){ return (pty&&PTYT[pty]) ? PTYT[pty] : (SKYT[sky]||'맑음'); }
+function skyIcon(sky,pty){
+  if(pty) return ({1:'🌧',2:'🌨',3:'❄️',5:'🌦',6:'🌨',7:'🌨'})[pty]||'🌧';
+  return sky===4?'☁️':sky===3?'⛅':'☀️';
+}
+// 체감온도 → 폭염특보 추정 (실 API 미연동 시 대체값)
+function heatAlert(f){ return f>=38?'중대경보':f>=35?'경보':f>=33?'주의보':'없음'; }
+
+/* ════════════════════════════════════════════════════════════
+   3. 기상청 API
+   ════════════════════════════════════════════════════════════ */
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const DOW=['일','월','화','수','목','금','토'];
+
+const KMA={
+  url(p,q){
+    // 중계함수 경유 : 인증키는 서버가 붙이므로 브라우저에 노출되지 않음
+    if(CFG.proxy) return `${CFG.proxy}?path=${encodeURIComponent(p)}&`
+                        + new URLSearchParams({dataType:'JSON',...q});
+    return `https://apis.data.go.kr/1360000/${p}?`
+         + new URLSearchParams({serviceKey:CFG.key,dataType:'JSON',...q});
+  },
+  async ncst(nx,ny,at){                                  // 초단기실황
+    const d=at?new Date(at):new Date(Date.now()-45*60000);
+    if(at) d.setMinutes(d.getMinutes()-5);
+    const r=await fetch(this.url('VilageFcstInfoService_2.0/getUltraSrtNcst',
+      {pageNo:1,numOfRows:60,base_date:ymd(d),base_time:pad(d.getHours())+'00',nx,ny}));
+    const j=await r.json(), it=j?.response?.body?.items?.item;
+    if(!it) throw new Error(j?.response?.header?.resultMsg||'실황 오류');
+    const o={}; it.forEach(x=>o[x.category]=parseFloat(x.obsrValue)); return o;
+  },
+  async sky(nx,ny){                                      // 초단기예보 SKY
+    const d=new Date(Date.now()-50*60000);
+    const r=await fetch(this.url('VilageFcstInfoService_2.0/getUltraSrtFcst',
+      {pageNo:1,numOfRows:60,base_date:ymd(d),base_time:pad(d.getHours())+'30',nx,ny}));
+    const j=await r.json(), it=j?.response?.body?.items?.item||[];
+    const s=it.find(x=>x.category==='SKY'); return s?+s.fcstValue:1;
+  },
+  async vilage(nx,ny){                                   // 단기예보 3일
+    const d=new Date(); const hs=[23,20,17,14,11,8,5,2];
+    let h=hs.find(x=>d.getHours()>=x+1)??23;
+    if(h===23&&d.getHours()<3) d.setDate(d.getDate()-1);
+    const r=await fetch(this.url('VilageFcstInfoService_2.0/getVilageFcst',
+      {pageNo:1,numOfRows:800,base_date:ymd(d),base_time:pad(h)+'00',nx,ny}));
+    const j=await r.json(); return j?.response?.body?.items?.item||[];
+  },
+  async mid(regLand,regTa){                              // 중기예보 4~10일
+    const n=new Date(); const t=new Date(n);
+    t.setHours(n.getHours()<18?6:18,0,0,0);
+    if(n.getHours()<6){t.setDate(t.getDate()-1);t.setHours(18)}
+    const tm=ymd(t)+pad(t.getHours())+'00';
+    const [a,b]=await Promise.all([
+      fetch(this.url('MidFcstInfoService/getMidLandFcst',{pageNo:1,numOfRows:10,regId:regLand,tmFc:tm})).then(r=>r.json()),
+      fetch(this.url('MidFcstInfoService/getMidTa',{pageNo:1,numOfRows:10,regId:regTa,tmFc:tm})).then(r=>r.json())
+    ]);
+    return {land:a?.response?.body?.items?.item?.[0]||{}, ta:b?.response?.body?.items?.item?.[0]||{}};
+  },
+  /* 기상특보 통보문 — t6 에 현재 발효 현황이 구역까지 들어 있다 */
+  async warnMsg(stn){
+    const t=new Date(), f=new Date(Date.now()-48*3600e3);
+    const r=await fetch(this.url('WthrWrnInfoService/getWthrWrnMsg',
+      {pageNo:1,numOfRows:10,stnId:stn,fromTmFc:ymd(f),toTmFc:ymd(t)}));
+    const j=await r.json();
+    const items=j?.response?.body?.items?.item||[];
+    if(!items.length) return null;
+    return items.reduce((a,b)=>(+b.tmFc>+a.tmFc?b:a));      // 가장 최근 통보문
+  }
+};
+
+/* ── 특보 통보문 t6 파싱 ───────────────────────────────────────
+   o 폭염경보 : 충청남도(부여, 청양, 태안), 대전, 세종(세종남부)
+   o 폭염주의보 : 충청남도(부여, 청양, 태안 제외), 세종(세종북부)
+   ※ '제외' 가 붙으면 나열된 시·군을 뺀 나머지 전체가 대상이다.   */
+function splitTop(s){                                       // 괄호 밖 쉼표로만 분리
+  const out=[]; let d=0, cur='';
+  for(const ch of s){
+    if(ch==='('||ch==='（') d++;
+    else if(ch===')'||ch==='）') d--;
+    if(ch===',' && d===0){ out.push(cur); cur=''; } else cur+=ch;
+  }
+  out.push(cur);
+  return out.map(x=>x.trim()).filter(Boolean);
+}
+/* 구역명 대조는 '정확히 일치'로 한다.
+   부분일치로 하면 '부산동부'가 '부산'을 품어 (부산동부 제외) 판정이 뒤집히고,
+   '군산옥도면'(섬)이 '군산'으로 잘못 잡힌다.
+   단, '군산(옥도면 제외)' 처럼 괄호가 달린 이름은 괄호를 떼고 비교한다. */
+function nameEq(n,k){
+  const base=String(n).replace(/[(（].*$/,'').trim();
+  return base===k || String(n).trim()===k;
+}
+function segHit(site, seg){
+  const m=seg.match(/^(.+?)\s*[(（](.+)[)）]\s*$/);
+  if(!m) return site.wide.some(k=>seg.includes(k)) || site.area.some(k=>seg.includes(k));
+  const wide=m[1].trim(), inner=m[2].trim();
+  if(!site.wide.some(k=>wide.includes(k)) && !site.area.some(k=>wide.includes(k))) return false;
+  const excl=/제외\s*$/.test(inner);                        // 끝에 '제외' → 나열분을 뺀 나머지 전체
+  const names=splitTop(inner.replace(/\s*제외\s*$/,''));
+  const listed=names.some(n=>site.area.some(k=>nameEq(n,k)));
+  return excl ? !listed : listed;
+}
+function parseHeatT6(t6){
+  const out={}; SITES.forEach(s=>out[s.id]='없음');
+  if(!t6) return out;
+  t6.split(/\r?\n/).forEach(L=>{
+    const m=L.match(/폭염(중대경보|경보|주의보)\s*[:：]\s*(.+)$/);
+    if(!m) return;
+    const lv=m[1], segs=splitTop(m[2]);
+    SITES.forEach(s=>{
+      if(ALERT_LV.indexOf(lv) <= ALERT_LV.indexOf(out[s.id])) return;   // 상위 등급 유지
+      if(segs.some(seg=>segHit(s,seg))) out[s.id]=lv;
+    });
+  });
+  return out;
+}
+
+/* ════════════════════════════════════════════════════════════
+   4. 기상 수집 (실시간 / 데모)
+   ════════════════════════════════════════════════════════════ */
+const DEMO={
+  gunsan:{sky:4,pty:0,ta:30.1,rh:74,wsd:2.1}, janghang:{sky:3,pty:0,ta:30.4,rh:72,wsd:2.6},
+  daejeon:{sky:4,pty:0,ta:31.2,rh:70,wsd:1.8}, cheonan:{sky:3,pty:0,ta:31.8,rh:69,wsd:1.5},
+  sintanjin:{sky:4,pty:0,ta:31.6,rh:69,wsd:1.7}, busanNP:{sky:1,pty:0,ta:30.6,rh:73,wsd:3.4},
+  stjCY:{sky:4,pty:0,ta:31.6,rh:69,wsd:1.7}, gsCY:{sky:4,pty:0,ta:30.1,rh:74,wsd:2.1},
+  asanCY:{sky:3,pty:0,ta:30.9,rh:71,wsd:1.9}, uiwang:{sky:4,pty:0,ta:31.0,rh:70,wsd:1.6}
+};
+const DEMO_CITY={'서울':{sky:4,pty:0,ta:31.4},'대전':{sky:4,pty:0,ta:31.2},'부산':{sky:1,pty:0,ta:30.6}};
+
+function demoWeek(){
+  const a=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(); d.setDate(d.getDate()+i);
+    const sky=[4,3,1,1,3,4,3][i], pop=[30,20,0,0,20,60,30][i];
+    a.push({date:d, sky, pty:0, pop, mn:[24,25,25,26,26,24,23][i], mx:[33,34,35,36,34,31,30][i]});
+  }
+  return a;
+}
+
+function fillDemo(at){
+  SITES.forEach(s=>{const d=DEMO[s.id]; LIVE.sites[s.id]={...d,feels:feels(d.ta,d.rh,d.wsd),alert:heatAlert(feels(d.ta,d.rh,d.wsd))}});
+  CITIES.forEach(c=>LIVE.cities[c.n]=DEMO_CITY[c.n]);
+  LIVE.week=demoWeek(); LIVE.at=at;
+}
+
+async function collect(){
+  const at=new Date();
+  NETFAIL=null;
+  if(CFG.mode!=='live'||!CFG.key){ fillDemo(at); return {ok:0,fail:0,demo:true} }
+  let ok=0,fail=0, lastErr='';
+  await Promise.all(SITES.map(async s=>{
+    try{
+      const [n,sk]=await Promise.all([KMA.ncst(s.nx,s.ny), KMA.sky(s.nx,s.ny).catch(()=>1)]);
+      const f=feels(n.T1H,n.REH,n.WSD);
+      LIVE.sites[s.id]={sky:sk,pty:n.PTY||0,ta:n.T1H,rh:n.REH,wsd:n.WSD,feels:f,alert:heatAlert(f)};
+      ok++;
+    }catch(e){fail++;lastErr=e.message;console.warn(s.name,e.message)}
+  }));
+  // 전 거점 실패 → 데모 데이터로 자동 전환하고 사유 안내
+  if(ok===0){
+    NETFAIL = /SERVICE|KEY|등록되지|LIMITED/i.test(lastErr) ? 'key'
+            : (CFG.proxy ? 'proxy' : 'cors');
+    NETFAIL_MSG = lastErr;
+    fillDemo(at);
+    return {ok:0,fail,demo:true};
+  }
+  // 폭염특보 — 관서별 통보문 t6 에서 구역까지 읽어 자동 배정 (실패 시 체감온도 추정값 유지)
+  try{
+    for(const st of [...new Set(SITES.map(s=>s.stn))]){
+      const msg=await KMA.warnMsg(st);
+      if(!msg) continue;
+      const m=parseHeatT6(msg.t6);
+      SITES.filter(s=>s.stn===st).forEach(s=>{
+        if(LIVE.sites[s.id]){ LIVE.sites[s.id].alert=m[s.id]; LIVE.sites[s.id].alertSrc='kma' }
+      });
+    }
+  }catch(e){ console.warn('폭염특보 조회 실패', e.message) }
+  await Promise.all(CITIES.map(async c=>{
+    try{const n=await KMA.ncst(c.nx,c.ny); const sk=await KMA.sky(c.nx,c.ny).catch(()=>1);
+      LIVE.cities[c.n]={sky:sk,pty:n.PTY||0,ta:n.T1H}}catch(e){LIVE.cities[c.n]=null}
+  }));
+  LIVE.week=await buildWeek().catch(()=>demoWeek());
+  LIVE.at=at; return {ok,fail};
+}
+
+async function buildWeek(){
+  const out=[];
+  const items=await KMA.vilage(67,100);                    // 대전 기준 (중부)
+  const byDay={};
+  items.forEach(i=>{ (byDay[i.fcstDate]=byDay[i.fcstDate]||[]).push(i) });
+  for(let i=0;i<3;i++){
+    const d=new Date(); d.setDate(d.getDate()+i);
+    const arr=byDay[ymd(d)]||[]; const pick=(c,t)=>arr.find(x=>x.category===c&&(!t||x.fcstTime===t))?.fcstValue;
+    out.push({date:d, sky:+(pick('SKY','1200')||pick('SKY')||1), pty:+(pick('PTY','1200')||0),
+      pop:+(pick('POP','1200')||0), mn:parseFloat(pick('TMN'))||null, mx:parseFloat(pick('TMX'))||null});
+  }
+  const m=await KMA.mid('11C20000','11C20101');
+  for(let i=3;i<7;i++){
+    const d=new Date(); d.setDate(d.getDate()+i);
+    const wf=m.land['wf'+i+'Am']||m.land['wf'+i]||'';
+    out.push({date:d, sky:/흐림/.test(wf)?4:/구름/.test(wf)?3:1, pty:/비|눈/.test(wf)?1:0,
+      pop:+(m.land['rnSt'+i+'Am']||m.land['rnSt'+i]||0),
+      mn:m.ta['taMin'+i]??null, mx:m.ta['taMax'+i]??null});
+  }
+  return out;
+}
+
+/* ════════════════════════════════════════════════════════════
+   5. 일자별 스냅샷 (매일 14시 기준 자동 확정)
+   ════════════════════════════════════════════════════════════ */
+function blankDay(dstr){
+  const o={date:dstr, baseAt:null, locked:false, wx:{}, notes:{}, etc:{text:'',by:'',at:''}};
+  SITES.forEach(s=>{o.notes[s.id]={worker:'',facility:'',transport:'',by:'',at:''}});
+  return o;
+}
+
+/* 저장된 자료의 빠진 항목을 채워 넣는다.
+   (이전 버전에서 저장된 자료나 일부만 기록된 자료 때문에 화면이 깨지는 것을 막음) */
+function normalizeDay(d, dstr){
+  if(!d || typeof d!=='object') return blankDay(dstr);
+  d.date = d.date || dstr;
+  if(typeof d.locked!=='boolean') d.locked=false;
+  if(!d.wx    || typeof d.wx!=='object')    d.wx={};
+  if(!d.notes || typeof d.notes!=='object') d.notes={};
+  if(!d.etc   || typeof d.etc!=='object')   d.etc={text:'',by:'',at:''};
+  if(typeof d.etc.text!=='string') d.etc.text='';
+  SITES.forEach(s=>{
+    const n=d.notes[s.id];
+    if(!n || typeof n!=='object') d.notes[s.id]={worker:'',facility:'',transport:'',by:'',at:''};
+    else ['worker','facility','transport'].forEach(k=>{ if(typeof n[k]!=='string') n[k]='' });
+    if(!(s.id in d.wx)) d.wx[s.id]=null;
+  });
+  return d;
+}
+/* 화면에서 그날 자료를 가져올 때는 항상 이걸 통해서 */
+function day(k){ return DB[k]=normalizeDay(DB[k], k) }
+
+/* ════════════════════════════════════════════════════════════
+   5-2. 공용 저장소 동기화
+   ════════════════════════════════════════════════════════════ */
+let DBOK=null, SYNCING=false;      // null=확인전 / true=연결됨 / false=끊김
+
+async function fbGet(path){
+  const [p,q]=String(path).split('?');            // .json 은 쿼리 앞에 와야 한다
+  const r=await fetch(`${FB}${p}.json${q?'?'+q:''}`, {cache:'no-store'});
+  if(!r.ok) throw new Error('DB '+r.status);
+  return r.json();
+}
+async function fbSend(path, body, method){
+  const r=await fetch(`${FB}${path}.json`, {method, body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('DB '+r.status);
+  return r.json();
+}
+const fbPatch=(p,b)=>fbSend(p,b,'PATCH');
+const fbPush =(p,b)=>fbSend(p,b,'POST');
+
+/* 서버 → 화면 : 해당 일자를 내려받아 병합 */
+async function pullDay(dstr){
+  try{
+    const rec=await fbGet(`/days/${dstr}`);
+    DBOK=true;
+    if(!rec) return false;
+    const d=day(dstr);
+    if(rec.wx)    SITES.forEach(s=>{ if(rec.wx[s.id]) d.wx[s.id]=rec.wx[s.id] });
+    if(rec.notes) SITES.forEach(s=>{ if(rec.notes[s.id]) Object.assign(d.notes[s.id], rec.notes[s.id]) });
+    if(rec.etc)   Object.assign(d.etc, rec.etc);
+    if(rec.baseAt) d.baseAt=rec.baseAt;
+    if(rec.locked) d.locked=true;
+    save();
+    return true;
+  }catch(e){ DBOK=false; console.warn('DB 읽기 실패', e.message); return false }
+}
+/* 화면 → 서버 : 바뀐 부분만 올림 */
+async function pushNote(dstr, siteId, obj){
+  try{ await fbPatch(`/days/${dstr}/notes/${siteId}`, obj); DBOK=true }
+  catch(e){ DBOK=false; console.warn('DB 저장 실패', e.message) }
+}
+async function pushEtc(dstr, obj){
+  try{ await fbPatch(`/days/${dstr}/etc`, obj); DBOK=true }
+  catch(e){ DBOK=false; console.warn('DB 저장 실패', e.message) }
+}
+async function pushWx(dstr, d){
+  try{ await fbPatch(`/days/${dstr}`, {wx:d.wx, baseAt:d.baseAt, locked:d.locked}); DBOK=true }
+  catch(e){ DBOK=false }
+}
+async function pushLog(entry){
+  try{ await fbPush('/logs', entry) }catch(e){}
+}
+/* 저장 가능한 일자 목록 */
+async function pullDates(){
+  try{ const o=await fbGet('/days?shallow=true'); DBOK=true;
+       Object.keys(o||{}).forEach(k=>{ if(!DB[k]) DB[k]=blankDay(k) }); save(); }
+  catch(e){ DBOK=false }
+}
+/* 주기 동기화 — 다른 거점이 입력한 내용이 자동으로 반영됨 */
+async function syncTick(){
+  if(SYNCING||!VIEW) return;
+  SYNCING=true;
+  try{ const before=JSON.stringify(day(VIEW));
+       await pullDay(VIEW);
+       if(JSON.stringify(day(VIEW))!==before) guard(renderTable,'표');
+       renderDbTag();
+  }finally{ SYNCING=false }
+}
+function renderDbTag(){
+  const el=document.getElementById('dbTag'); if(!el) return;
+  el.textContent = DBOK===true ? '● 공용 저장소 연결됨'
+                 : DBOK===false ? '● 공용 저장소 끊김 (이 브라우저에만 저장)' : '';
+  el.style.color = DBOK===true ? '#7fd6a4' : '#f0b7ae';
+}
+function today(){ return iso(new Date()) }
+
+/* 현재 실황을 그날 표에 반영 */
+function applyLive(d){
+  SITES.forEach(s=>{ d.wx[s.id] = LIVE.sites[s.id] ? {...LIVE.sites[s.id]} : null });
+}
+
+async function ensureToday(){
+  const t=today();
+  day(t);
+  const now=new Date();
+  // 14시 경과 & 미확정이면 자동 확정
+  if(!DB[t].locked && now.getHours()>=14){
+    await captureBase(t,true);
+  }else if(!DB[t].locked){
+    applyLive(DB[t]);                       // 14시 전 → 현재 실황을 임시 표시
+  }
+  save();
+}
+async function captureBase(dstr,auto){
+  const d=day(dstr);
+  if(CFG.mode==='live' && CFG.key && !NETFAIL){
+    const base=new Date(dstr+'T14:00:00');
+    await Promise.all(SITES.map(async s=>{
+      try{ const n=await KMA.ncst(s.nx,s.ny,base);
+        const f=feels(n.T1H,n.REH,n.WSD);
+        d.wx[s.id]={sky:LIVE.sites[s.id]?.sky??1,pty:n.PTY||0,ta:n.T1H,rh:n.REH,wsd:n.WSD,feels:f,
+                    alert:LIVE.sites[s.id]?.alert||heatAlert(f)};
+      }catch(e){ d.wx[s.id]=LIVE.sites[s.id]?{...LIVE.sites[s.id]}:null }
+    }));
+  }else{
+    applyLive(d);
+  }
+  d.baseAt=dstr+' 14:00'; d.locked=true;
+  addLog(auto?'자동':'수동','시스템','-','14시 기준 기상 확정','', dstr+' 14:00');
+  save(); pushWx(dstr, d);                      // 확정값을 전 거점이 공유
+}
+function save(){ S.s(K.db,DB); S.s(K.log,LOG) }
+
+/* ════════════════════════════════════════════════════════════
+   6. 로그인 / 권한
+   ════════════════════════════════════════════════════════════ */
+/* 접속코드 → 권한
+   rladnjstkd : 관리자      — 전 칸 입력 + 로그 조회/다운로드
+   rlarhkdqja : 통합입력자  — 전 칸 입력, 로그 조회 불가              */
+const CODES={ rladnjstkd:{role:'admin', label:'관리자'},
+              rlarhkdqja:{role:'super', label:'통합입력자'} };
+
+function showAdm(on){
+  document.getElementById('usrPane').style.display = on?'none':'block';
+  document.getElementById('admPane').style.display = on?'block':'none';
+  document.getElementById('lgErr').textContent='';
+  if(on) setTimeout(()=>document.getElementById('lgCode').focus(),50);
+}
+function doLogin(){
+  const site=document.getElementById('lgSite').value;
+  const name=document.getElementById('lgName').value.trim();
+  if(!name){ document.getElementById('lgErr').textContent='이름을 입력하세요.'; return }
+  SES={site, name, role: site==='HQ'?'hq':'site'};
+  S.s(K.ses,SES);
+  addLog('로그인', SES.name, siteName(site), '-','','');
+  save(); start();
+}
+function doAdmin(){
+  const el=document.getElementById('lgCode'), c=el.value.trim();
+  const hit=CODES[c];
+  if(!hit){ document.getElementById('lgErr').textContent='접속코드가 올바르지 않습니다.';
+    el.value=''; el.focus(); return }
+  SES={site:'ALL', name:hit.label, role:hit.role};
+  S.s(K.ses,SES);
+  addLog('로그인', hit.label, hit.label, '-','','');
+  save(); start();
+}
+function logout(){ addLog('로그아웃',SES.name,siteName(SES.site),'-','',''); save();
+  SES=null; localStorage.removeItem(K.ses); location.reload() }
+function siteName(id){ return id==='HQ'?'국내사업부장'
+  : id==='ALL'?(SES?.name||'관리자') : (SITES.find(s=>s.id===id)?.name||id) }
+
+const isAll   = ()=> SES && (SES.role==='admin'||SES.role==='super');
+function canViewLog(){ return SES && SES.role==='admin' }          // 관리자 전용
+function canEditNote(siteId){
+  if(!SES) return false;
+  if(isAll()) return true;                                          // 전 칸 + 과거일자 포함
+  return SES.role==='site' && SES.site===siteId && VIEW===today();
+}
+function canEditEtc(){
+  if(!SES) return false;
+  if(isAll()) return true;
+  return SES.role==='hq' && VIEW===today();
+}
+
+/* ════════════════════════════════════════════════════════════
+   7. 렌더
+   ════════════════════════════════════════════════════════════ */
+/* 화면 오류 안전망 — 한 곳이 깨져도 전체가 백지가 되지 않도록 */
+function guard(fn,label){
+  try{ fn() }
+  catch(e){
+    console.error(label,e);
+    const nb=document.getElementById('netBar');
+    if(nb){ nb.style.display='flex';
+      nb.innerHTML=`<div><b>화면을 그리는 중 문제가 생겼습니다. (${esc(label)})</b>
+        저장된 자료가 손상되었을 수 있습니다.
+        <button onclick="resetLocal()" style="margin-left:6px;padding:4px 11px;background:#b7791f;
+          color:#fff;border:none;border-radius:5px;font-weight:700;cursor:pointer">저장자료 초기화</button>
+        <span style="opacity:.7;display:block">${esc(e.message)}</span></div>`; }
+  }
+}
+function resetLocal(){
+  if(!confirm('이 브라우저에 저장된 입력자료와 로그를 모두 지우고 새로 시작할까요?')) return;
+  try{ localStorage.removeItem(K.db); localStorage.removeItem(K.log); localStorage.removeItem(K.ses); }catch(e){}
+  location.reload();
+}
+
+function renderTop(){
+  const w=LIVE.week||[], t=LIVE.at?`${pad(LIVE.at.getHours())}:${pad(LIVE.at.getMinutes())} 기준`:'';
+  document.getElementById('natTime').textContent=t+(CFG.mode!=='live'?' · 데모':'');
+  document.getElementById('siteTime').textContent=t;
+
+  // 실시간 조회 실패 안내
+  const nb=document.getElementById('netBar');
+  if(NETFAIL){
+    nb.style.display='flex';
+    nb.innerHTML = NETFAIL==='cors'
+      ? `<b>실시간 기상 자료를 받지 못해 데모 데이터를 표시하고 있습니다.</b>
+         파일을 직접 열면 브라우저가 공공데이터포털 호출을 <u>CORS 정책</u>으로 막습니다.
+         배포된 주소로 접속하면 실시간 값이 들어옵니다. (표 작성·입력·출력은 그대로 됩니다)`
+      : NETFAIL==='proxy'
+      ? `<b>중계함수(/api/kma)에 연결하지 못했습니다.</b> 데모 데이터를 표시합니다.
+         <span style="opacity:.7">(${esc(NETFAIL_MSG)})</span>`
+      : NETFAIL==='key'
+      ? `<b>인증키가 거부되었습니다.</b> 공공데이터포털에서 3개 서비스(단기예보·중기예보·기상특보)
+         활용신청이 모두 승인되었는지 확인하세요. <span style="opacity:.7">(${esc(NETFAIL_MSG)})</span>`
+      : `<b>기상 자료를 받지 못했습니다.</b> 데모 데이터를 표시합니다.
+         <span style="opacity:.7">(${esc(NETFAIL_MSG)})</span>`;
+  }else nb.style.display='none';
+
+  const alerts=SITES.filter(s=>LIVE.sites[s.id]&&LIVE.sites[s.id].alert!=='없음');
+  const hot=SITES.map(s=>({n:s.name,f:LIVE.sites[s.id]?.feels??-99})).sort((a,b)=>b.f-a.f)[0];
+  document.getElementById('natSummary').innerHTML=
+    `전국 <b>${w[0]?SKYT[w[0].sky]||'맑음':'—'}</b> · 강수확률 <b>${w[0]?.pop??0}%</b><br>`+
+    `폭염특보 발효 거점 <b style="color:${alerts.length?'#C00000':'#1f9254'}">${alerts.length}개소</b>`+
+    (alerts.length?` <span style="font-size:11px;color:#6b7688">(${alerts.map(a=>a.name).join(', ')})</span>`:'')+
+    `<br>최고 체감온도 <b style="color:#C00000">${hot.f>-99?hot.f.toFixed(1)+'℃':'—'}</b> <span style="font-size:11px;color:#6b7688">${hot.n}</span>`;
+  document.getElementById('natCities').innerHTML=CITIES.map(c=>{
+    const d=LIVE.cities[c.n];
+    return `<div><div class="c-n">${c.n}</div><div style="font-size:17px">${d?skyIcon(d.sky,d.pty):'—'}</div>
+      <div class="c-t">${d?d.ta+'℃':'—'}</div></div>`}).join('');
+
+  document.getElementById('week').innerHTML=w.map((d,i)=>{
+    const dt=d.date, dw=dt.getDay();
+    return `<div class="wd ${dw===6?'sat':dw===0?'sun':''}">
+      <div class="d">${i===0?'오늘':(dt.getMonth()+1)+'.'+dt.getDate()} (${DOW[dw]})</div>
+      <div class="i">${skyIcon(d.sky,d.pty)}</div>
+      <div class="t"><span class="mn">${d.mn??'-'}</span> / <span class="mx">${d.mx??'-'}</span></div>
+      <div class="p">💧${d.pop??0}%</div></div>`}).join('');
+
+  document.getElementById('siteStrip').innerHTML=SITES.map(s=>{
+    const d=LIVE.sites[s.id];
+    const cls=!d?'':d.feels>=35?'hot':d.feels>=33?'warn':'';
+    return `<div class="st ${cls}"><div class="n">${s.name}</div>
+      <div class="i">${d?skyIcon(d.sky,d.pty):'—'}</div>
+      <div class="t">${d?d.ta+'℃':'—'}</div>
+      <div class="f">체감 <b>${d?d.feels.toFixed(1)+'℃':'—'}</b></div></div>`}).join('');
+}
+
+function renderTable(){
+  const d=day(VIEW);
+  const dt=new Date(VIEW+'T00:00:00');
+  const head=`${dt.getFullYear()}년 ${dt.getMonth()+1}월 ${dt.getDate()}일 (${DOW[dt.getDay()]}) 14시 기준`;
+  const cols=SITES.map(()=>'<col class="c-s">').join('');
+  const cell=(v)=>v==null||v===''?'':v;
+
+  let h=`<table class="rep" id="repTbl"><colgroup><col class="c-b">${cols}</colgroup><tbody>`;
+  h+=`<tr class="r-h"><td class="hd" rowspan="2">구분</td><td class="hd dt" colspan="${SITES.length}">${head}</td></tr>`;
+  h+=`<tr class="r-h">${SITES.map(s=>`<td class="hd">${s.name}</td>`).join('')}</tr>`;
+  h+=`<tr class="r-b"><td>기상현황</td>${SITES.map(s=>{const w=d.wx[s.id];
+      return `<td>${w?skyText(w.sky,w.pty):''}</td>`}).join('')}</tr>`;
+  h+=`<tr class="r-b"><td>체감온도</td>${SITES.map(s=>{const w=d.wx[s.id];
+      return `<td>${w?w.feels.toFixed(1):''}</td>`}).join('')}</tr>`;
+  h+=`<tr class="r-b"><td class="alert">폭염특보</td>${SITES.map(s=>{const w=d.wx[s.id];
+      return `<td class="alert">${w?w.alert:''}</td>`}).join('')}</tr>`;
+  ROWS.forEach(r=>{
+    h+=`<tr class="r-b"><td>${r.label}</td>${SITES.map(s=>{
+      const v=d.notes[s.id]?.[r.k]||'';
+      const ed=canEditNote(s.id);
+      return `<td class="note ${ed?'edit':'locked'}" ${ed?`onclick="openM('${s.id}','${r.k}')"`:''}
+        title="${ed?'클릭하여 입력':(VIEW!==today()?'과거 자료는 관리자만 수정 가능':'소속 거점만 입력 가능')}">${esc(cell(v))}</td>`
+    }).join('')}</tr>`;
+  });
+  const ee=canEditEtc();
+  h+=`<tr><td style="height:64px">기타사항</td>
+      <td class="etc ${ee?'edit':'locked'}" colspan="${SITES.length}"
+        ${ee?`onclick="openM('HQ','etc')"`:''}
+        title="${ee?'클릭하여 입력':'국내사업부장·관리자만 입력 가능'}">${esc(d.etc.text||'')}</td></tr>`;
+  h+=`</tbody></table>`;
+  document.getElementById('tblBox').innerHTML=h;
+
+  // 하단 안내
+  const pre = VIEW===today() && !DB[VIEW]?.locked;
+  const scope = isAll() ? '전체 칸 (관리자 권한)'
+              : SES.role==='hq' ? '기타사항'
+              : siteName(SES.site)+' 열 (근로자/제품/운송)';
+  document.getElementById('tip').innerHTML =
+    (pre? `⏳ 오늘 14시 기준 미확정 — 현재 실황을 임시 표시 중입니다 (14시 경과 시 자동 확정).`
+        : `✔ ${DB[VIEW]?.baseAt||VIEW+' 14:00'} 기준 확정`)
+    + ` · 편집 권한: <b>${scope}</b>`
+    + (VIEW!==today() ? (isAll()? ' · <b style="color:#b7791f">과거 자료 수정 가능</b>'
+                                : ' · <b style="color:#C00000">과거 자료 조회 모드 (수정 불가)</b>') : '');
+  document.getElementById('btn14').style.display = (SES.role==='hq'||isAll())?'':'none';
+}
+
+function renderDates(){
+  const ks=Object.keys(DB).sort().reverse();
+  if(!ks.includes(today())) ks.unshift(today());
+  document.getElementById('dateSel').innerHTML=ks.map(k=>{
+    const d=new Date(k+'T00:00:00');
+    return `<option value="${k}" ${k===VIEW?'selected':''}>${d.getMonth()+1}월 ${d.getDate()}일 (${DOW[d.getDay()]})${k===today()?' · 오늘':''}</option>`}).join('');
+}
+async function loadDate(k){ VIEW=k; guard(renderTable,'표');
+  await pullDay(k); guard(renderTable,'표'); renderDbTag(); }
+function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+
+/* ════════════════════════════════════════════════════════════
+   8. 입력 모달
+   ════════════════════════════════════════════════════════════ */
+let M={site:null,key:null};
+function openM(site,key){
+  if(key==='etc'? !canEditEtc() : !canEditNote(site)) return;
+  M={site,key};
+  const d=day(VIEW);
+  const label = key==='etc'?'기타사항':ROWS.find(r=>r.k===key).label;
+  document.getElementById('mTtl').textContent =
+    (key==='etc'?'기타사항':siteName(site)+' — '+label);
+  const cur = key==='etc'? d.etc.text : (d.notes[site]?.[key]||'');
+  document.getElementById('mTx').value=cur;
+  const meta = key==='etc'? d.etc : d.notes[site];
+  document.getElementById('mQ').textContent = meta?.by? `최종 입력 : ${meta.by} · ${meta.at}` : '최초 입력';
+  document.getElementById('mbg').classList.add('on');
+  setTimeout(()=>document.getElementById('mTx').focus(),50);
+}
+function qk(t){ document.getElementById('mTx').value=t }
+function closeM(){ document.getElementById('mbg').classList.remove('on') }
+function saveM(){
+  const v=document.getElementById('mTx').value.trim();
+  const d=day(VIEW), stamp=nowStamp();
+  if(M.key==='etc'){
+    addLog('입력',SES.name,SES.role==='hq'?'국내사업부장':SES.name,'기타사항',d.etc.text,v);
+    d.etc={text:v,by:SES.name,at:stamp};
+    pushEtc(VIEW, d.etc).then(renderDbTag);
+  }else{
+    const n=d.notes[M.site];
+    addLog('입력',SES.name,siteName(M.site),ROWS.find(r=>r.k===M.key).label,n[M.key],v);
+    n[M.key]=v; n.by=SES.name; n.at=stamp;
+    pushNote(VIEW, M.site, {[M.key]:v, by:SES.name, at:stamp}).then(renderDbTag);
+  }
+  save(); closeM(); guard(renderTable,'표');
+}
+function nowStamp(){const d=new Date();
+  return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`}
+
+/* ════════════════════════════════════════════════════════════
+   9. 로그
+   ════════════════════════════════════════════════════════════ */
+function addLog(action,user,site,target,before,after){
+  const e={ts:new Date().toISOString(),date:VIEW||today(),action,user,site,target,
+           before:before||'',after:after||''};
+  LOG.push(e);
+  if(LOG.length>5000) LOG=LOG.slice(-5000);
+  pushLog(e);                                  // 공용 저장소에도 기록
+}
+async function toggleLog(){
+  if(!canViewLog()){ alert('로그는 관리자만 조회할 수 있습니다.'); return }
+  const el=document.getElementById('logView');
+  const on = el.style.display!=='block';
+  el.style.display = on?'block':'none';
+  if(!on) return;
+  renderLog();
+  try{                                     // 전 거점 로그를 공용 저장소에서 합쳐 보여줌
+    const o=await fbGet('/logs'); DBOK=true;
+    const remote=Object.values(o||{});
+    const seen=new Set(LOG.map(l=>l.ts+l.user+l.target));
+    remote.forEach(l=>{ if(l&&l.ts&&!seen.has(l.ts+l.user+l.target)){ LOG.push(l); seen.add(l.ts+l.user+l.target) } });
+    LOG.sort((a,b)=>a.ts<b.ts?-1:1);
+    save(); renderLog(); renderDbTag();
+  }catch(e){ DBOK=false; renderDbTag() }
+}
+function renderLog(){
+  const rows=LOG.slice().reverse().slice(0,300).map(l=>{
+    const t=new Date(l.ts);
+    return `<tr><td>${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())} ${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}</td>
+      <td>${esc(l.user)}</td><td>${esc(l.site)}</td><td>${esc(l.action)}</td><td>${esc(l.target)}</td>
+      <td class="o">${esc(l.before)}</td><td>${esc(l.after)}</td></tr>`}).join('');
+  document.getElementById('logBody').innerHTML=
+    `<table><thead><tr><th>일시</th><th>사용자</th><th>소속</th><th>구분</th><th>항목</th><th>이전값</th><th>변경값</th></tr></thead>
+     <tbody>${rows||'<tr><td colspan="7" style="padding:20px;text-align:center;color:#6b7688">기록 없음</td></tr>'}</tbody></table>`;
+}
+function downloadLog(){
+  if(!canViewLog()){ alert('로그는 관리자만 다운로드할 수 있습니다.'); return }
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const csv='﻿'+['일시','대상일자','사용자','소속','구분','항목','이전값','변경값'].join(',')+'\n'+
+    LOG.map(l=>[new Date(l.ts).toLocaleString('ko-KR'),l.date,l.user,l.site,l.action,l.target,l.before,l.after].map(q).join(',')).join('\n');
+  dl(new Blob([csv],{type:'text/csv;charset=utf-8'}),`폭염현황_입력로그_${ymd(new Date())}.csv`);
+}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+
+/* ════════════════════════════════════════════════════════════
+   10. 캡쳐 / 엑셀
+   ════════════════════════════════════════════════════════════ */
+function shot(){                       // 표 영역 → canvas
+  return html2canvas(document.getElementById('sheet'),{scale:2,backgroundColor:'#ffffff'});
+}
+function flash(id,txt,ms){             // 버튼 피드백
+  const b=document.getElementById(id), o=b.textContent;
+  b.textContent=txt; b.classList.add('done'); b.disabled=true;
+  setTimeout(()=>{b.textContent=o;b.classList.remove('done');b.disabled=false},ms||1600);
+}
+
+/* 사진 다운로드 (PNG 파일) */
+function capture(){
+  shot().then(cv=>{
+    cv.toBlob(b=>{ dl(b,`국내사업부_폭염현황_${VIEW.replace(/-/g,'')}.png`); flash('btnShot','✓ 저장됨') });
+  }).catch(e=>alert('사진 저장 실패: '+e.message));
+}
+
+/* 복사 — 클립보드에 이미지로 담아 메일·메신저·한글·워드에 바로 붙여넣기 */
+async function copyImg(){
+  const b=document.getElementById('btnCopy');
+  b.textContent='복사 중…'; b.disabled=true;
+  try{
+    const cv=await shot();
+    // 1순위 : Clipboard API (이미지 그대로 복사)
+    try{
+      const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+      await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+      b.disabled=false; flash('btnCopy','✓ 복사됨'); return;
+    }catch(e){ /* 미지원 브라우저 → 2순위로 */ }
+
+    // 2순위 : 선택영역 복사 (HTML 이미지로 붙여넣기 — 한글/워드/아웃룩 호환)
+    const box=document.createElement('div');
+    box.contentEditable='true';
+    box.style.cssText='position:fixed;left:-99999px;top:0;opacity:0';
+    box.innerHTML=`<img src="${cv.toDataURL('image/png')}">`;
+    document.body.appendChild(box);
+    const rg=document.createRange(); rg.selectNodeContents(box);
+    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(rg);
+    const ok=document.execCommand('copy');
+    sel.removeAllRanges(); box.remove();
+    b.disabled=false;
+    if(ok) flash('btnCopy','✓ 복사됨');
+    else { b.textContent='📋 복사';
+      alert('이 브라우저에서는 복사가 지원되지 않습니다.\n[사진 다운로드]를 이용하세요.') }
+  }catch(e){
+    b.textContent='📋 복사'; b.disabled=false;
+    alert('복사 실패: '+e.message);
+  }
+}
+
+/* ─── XLSX 생성 (원본 서식 재현) ─── */
+const X=(s)=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+function colLetter(n){let s='';while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=(n-m-1)/26}return s}
+
+function buildSheetXml(){
+  const d=day(VIEW);
+  const dt=new Date(VIEW+'T00:00:00');
+  const head=`${dt.getFullYear()}년 ${dt.getMonth()+1}월 ${dt.getDate()}일 (${DOW[dt.getDay()]}) 14시 기준`;
+  const N=SITES.length, last=colLetter(2+N);       // B(2) ~ L(12)
+  const rows=[];
+  const cellS=(ref,st,v,num)=>v===''||v==null
+    ? `<c r="${ref}" s="${st}"/>`
+    : (num? `<c r="${ref}" s="${st}"><v>${v}</v></c>`
+          : `<c r="${ref}" s="${st}" t="inlineStr"><is><t xml:space="preserve">${X(v)}</t></is></c>`);
+
+  // 3행 제목
+  rows.push(`<row r="3" ht="21" customHeight="1">${cellS('B3',1,'■ 국내사업부 주요거점 폭염 현황')}</row>`);
+  rows.push(`<row r="4" ht="6.6" customHeight="1"/>`);
+  // 5행 구분 + 날짜
+  let r5=cellS('B5',2,'구분')+cellS('C5',3,head);
+  for(let i=1;i<N;i++) r5+=`<c r="${colLetter(3+i)}5" s="3"/>`;
+  rows.push(`<row r="5" ht="26.4" customHeight="1">${r5}</row>`);
+  // 6행 거점명
+  let r6=`<c r="B6" s="2"/>`+SITES.map((s,i)=>cellS(colLetter(3+i)+'6',2,s.name)).join('');
+  rows.push(`<row r="6" ht="26.4" customHeight="1">${r6}</row>`);
+  // 7 기상현황 / 8 체감온도 / 9 폭염특보
+  const line=(r,label,st,fn,numeric,cellSt)=>{
+    let x=cellS('B'+r, st===6?6:4, label);
+    SITES.forEach((s,i)=>{ x+=cellS(colLetter(3+i)+r, cellSt??st, fn(s), numeric) });
+    rows.push(`<row r="${r}" ht="35.4" customHeight="1">${x}</row>`);
+  };
+  line(7,'기상현황',4,s=>{const w=d.wx[s.id];return w?skyText(w.sky,w.pty):''});
+  line(8,'체감온도',4,s=>{const w=d.wx[s.id];return w?(Math.round(w.feels*10)/10):''},true,9);
+  line(9,'폭염특보',6,s=>{const w=d.wx[s.id];return w?w.alert:''});
+  ROWS.forEach((rr,idx)=>line(10+idx,rr.label,5,s=>d.notes[s.id]?.[rr.k]||''));
+  // 13 기타사항
+  let r13=cellS('B13',4,'기타사항')+cellS('C13',7,d.etc.text||'');
+  for(let i=1;i<N;i++) r13+=`<c r="${colLetter(3+i)}13" s="7"/>`;
+  rows.push(`<row r="13" ht="51" customHeight="1">${r13}</row>`);
+  rows.push(`<row r="14" ht="18">${cellS('B14',8,'※ 폭염특보 : 없음 / 주의보 / 경보 / 중대경보')}</row>`);
+
+  const cols=`<cols><col min="1" max="1" width="4.8" customWidth="1"/>
+    <col min="2" max="2" width="12.3" customWidth="1"/>
+    <col min="3" max="${2+N}" width="14.3" customWidth="1"/></cols>`;
+  const merges=`<mergeCells count="3">
+    <mergeCell ref="B5:B6"/><mergeCell ref="C5:${last}5"/><mergeCell ref="C13:${last}13"/></mergeCells>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<sheetViews><sheetView workbookViewId="0" showGridLines="0"/></sheetViews>
+<sheetFormatPr defaultRowHeight="16.5"/>${cols}
+<sheetData>${rows.join('')}</sheetData>${merges}
+<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/>
+<pageSetup orientation="landscape" paperSize="9" fitToWidth="1" fitToHeight="1"/>
+</worksheet>`;
+}
+
+const STYLES_XML=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="1"><numFmt numFmtId="176" formatCode="0.0"/></numFmts>
+<fonts count="8">
+<font><sz val="11"/><name val="맑은 고딕"/></font>
+<font><b/><sz val="14"/><name val="맑은 고딕"/></font>
+<font><b/><sz val="12"/><name val="맑은 고딕"/></font>
+<font><b/><sz val="14"/><name val="맑은 고딕"/></font>
+<font><sz val="12"/><name val="맑은 고딕"/></font>
+<font><sz val="11"/><name val="맑은 고딕"/></font>
+<font><b/><sz val="12"/><color rgb="FFC00000"/><name val="맑은 고딕"/></font>
+<font><sz val="10"/><name val="맑은 고딕"/></font>
+</fonts>
+<fills count="3"><fill><patternFill patternType="none"/></fill>
+<fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFFFFFCC"/><bgColor indexed="64"/></patternFill></fill></fills>
+<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>
+<border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right>
+<top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom><diagonal/></border>
+</borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="10">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="5" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="6" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="7" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+<xf numFmtId="176" fontId="4" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="표준" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+
+async function toXlsx(){
+  if(typeof JSZip==='undefined'){alert('엑셀 모듈을 불러오지 못했습니다. 인터넷 연결을 확인하세요.');return}
+  const dt=new Date(VIEW+'T00:00:00');
+  const sname=`${dt.getMonth()+1}.${dt.getDate()}`;
+  const zip=new JSZip();
+  zip.file('[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>`);
+  zip.folder('_rels').file('.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`);
+  const xl=zip.folder('xl');
+  xl.file('workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+ xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheets><sheet name="${X(sname)}" sheetId="1" r:id="rId1"/></sheets></workbook>`);
+  xl.folder('_rels').file('workbook.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`);
+  xl.file('styles.xml',STYLES_XML);
+  xl.folder('worksheets').file('sheet1.xml',buildSheetXml());
+  const blob=await zip.generateAsync({type:'blob',
+    mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  dl(blob,`2026년_폭염기간_일일 거점현황_국내사업부_${VIEW.replace(/-/g,'')}.xlsx`);
+}
+
+/* ════════════════════════════════════════════════════════════
+   11. 구동
+   ════════════════════════════════════════════════════════════ */
+async function refreshNow(){
+  const r=await collect();
+  const t=today();
+  if(DB[t]&&!DB[t].locked){ applyLive(DB[t]); save() }   // 오늘 미확정이면 실황 반영
+  guard(renderTop,'상단'); if(VIEW) guard(renderTable,'표');
+  if(r.fail) console.warn(`${r.fail}개 거점 조회 실패`);
+}
+async function lock14(){
+  if(!(SES.role==='hq'||isAll())) return;
+  if(!confirm(`${VIEW} 14시 기준으로 기상현황·체감온도를 확정할까요?`)) return;
+  await captureBase(VIEW,false); guard(renderTable,'표');
+}
+
+async function start(){
+  document.getElementById('login').style.display='none';
+  document.getElementById('topbar').style.display='flex';
+  document.getElementById('app').style.display='block';
+  document.getElementById('meTag').textContent=
+    isAll() ? `${SES.name} · 전체 권한`
+    : SES.role==='hq' ? `국내사업부장 · ${SES.name}`
+    : `${siteName(SES.site)} · ${SES.name}`;
+  document.getElementById('btnLog').style.display = canViewLog()?'':'none';
+  VIEW=today();
+  await pullDates();                      // 공용 저장소의 일자 목록
+  await pullDay(VIEW);                    // 다른 거점이 이미 입력한 내용 받아오기
+  await collect();
+  await ensureToday();
+  guard(renderTop,'상단'); guard(renderDates,'날짜목록'); guard(renderTable,'표');
+  renderDbTag();
+  // 14시 자동 확정 감시 (1분 주기)
+  setInterval(async()=>{
+    const t=today();
+    day(t);
+    if(!DB[t].locked && new Date().getHours()>=14){
+      await collect(); await captureBase(t,true);
+      if(VIEW===t){guard(renderDates,'날짜목록');guard(renderTable,'표')}
+    }
+  },60000);
+  setInterval(syncTick,20000);            // 20초마다 다른 거점 입력 반영
+  setInterval(refreshNow,600000);         // 10분마다 현재 기상 갱신
+}
+
+(function init(){
+  DB=S.g(K.db,{}); LOG=S.g(K.log,[]); SES=S.g(K.ses,null);
+  if(!DB||typeof DB!=='object') DB={};
+  if(!Array.isArray(LOG)) LOG=[];
+  Object.keys(DB).forEach(k=>{                       // 이전 버전 자료 정리
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(k)) delete DB[k]; else normalizeDay(DB[k],k);
+  });
+  document.getElementById('lgSite').innerHTML=
+    LOGIN_LIST.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  showAdm(false);
+  document.getElementById('mbg').addEventListener('click',e=>{if(e.target.id==='mbg')closeM()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
+  if(SES) start();
+})();
+</script>
+</body>
+</html>
