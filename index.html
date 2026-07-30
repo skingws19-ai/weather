@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>국내사업부 주요거점 폭염 현황</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{
   --hd:#FFFFCC;          /* 표 헤더 연노랑 (원본 FFFFCC) */
@@ -21,23 +20,6 @@ input,select,textarea{font-family:inherit;font-size:13px;border:1px solid var(--
   border-radius:5px;padding:7px 9px;width:100%;background:#fff}
 select{cursor:pointer}
 
-/* ═══════════ 로그인 ═══════════ */
-#login{position:fixed;inset:0;background:linear-gradient(160deg,#1f3864,#2f5597);
-  display:flex;align-items:center;justify-content:center;z-index:200}
-#login .box{background:#fff;border-radius:12px;padding:34px 34px 28px;width:360px;
-  box-shadow:0 18px 50px rgba(0,0,0,.3)}
-#login h1{font-size:17px;color:var(--navy);text-align:center;margin-bottom:4px}
-#login .sub{font-size:12px;color:var(--mut);text-align:center;margin-bottom:22px}
-#login label{display:block;font-size:12px;font-weight:700;color:var(--mut);margin:14px 0 5px}
-#login button{width:100%;margin-top:20px;background:var(--navy);color:#fff;padding:11px;font-size:14px;font-weight:700}
-#login button:hover{background:#2f5597}
-#login button.adm{background:#fff;color:var(--navy);border:1px solid #c3cede;margin-top:9px;
-  padding:9px;font-size:12.5px;font-weight:600}
-#login button.adm:hover{background:#eef2f7}
-#login .err{color:var(--red);font-size:12px;margin-top:10px;text-align:center;min-height:16px}
-#login .cr{text-align:center;font-size:10.5px;color:#9aa3b2;margin-top:16px}
-#admPane{display:none}
-#admPane .note{font-size:11.5px;color:var(--mut);margin-top:9px;line-height:1.6}
 .crTop{font-size:11px;color:rgba(255,255,255,.62);white-space:nowrap;letter-spacing:.2px}
 
 /* ═══════════ 상단바 ═══════════ */
@@ -50,6 +32,14 @@ select{cursor:pointer}
 
 .wrap{max-width:1300px;margin:0 auto;padding:14px 18px 50px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:12px}
+.p-hd.big-hd{padding:11px 15px;font-size:16px;font-weight:800;letter-spacing:-.3px}
+/* 폭염현황 요약 — 크게 */
+.nat{padding:12px 16px}
+.nat .big{font-size:16px;line-height:1.95;font-weight:600}
+.nat .big b{font-weight:800;font-size:16px}
+.nat .big em{font-style:normal;font-weight:800;font-size:16px}
+.nat .big .nm{font-size:16px;color:#55617a;font-weight:600}
+.nat .big > div{padding:2px 0}
 /* 새로고침 바 */
 .refbar{display:flex;align-items:center;gap:11px;margin-bottom:12px;flex-wrap:wrap}
 .refbar .sp{flex:1}
@@ -85,392 +75,164 @@ body.busy .panel,body.busy #sheet{opacity:.55;pointer-events:none;transition:opa
 .wd.sat .d{color:#2563a8} .wd.sun .d{color:#c0392b}
 
 /* 거점 현재 기상 스트립 */
-.sites{display:flex;flex-wrap:wrap}
-.st{flex:1;min-width:118px;text-align:center;padding:9px 4px;border-right:1px dashed var(--line)}
-.st:last-child{border-right:none}
-.st .n{font-size:11.5px;font-weight:700;color:var(--navy)}
-.st .i{font-size:20px;line-height:1.35}
-.st .t{font-size:15px;font-weight:700}
-.st .f{font-size:11px;color:var(--mut)}
-.st .f b{color:#c0392b;font-size:12px}
+/* 사용자 코드 입력 */
+.code-box{display:flex;align-items:center;gap:6px}
+.code-box input{width:132px;padding:6px 9px;font-size:12.5px;border-radius:5px;border:none}
+.code-box button{background:rgba(255,255,255,.2);color:#fff;font-weight:700;padding:6px 13px}
+.code-box button:hover{background:rgba(255,255,255,.34)}
+.code-lb{font-size:12px;font-weight:700;padding:3px 10px;border-radius:11px;
+  background:rgba(255,255,255,.16);color:#cdd9ea}
+.code-lb.on{background:#1f9254;color:#fff}
+.code-lb.ng{background:#c62828;color:#fff}
+
+/* 거점 그룹 (계열 / 컨테이너) */
+.grp{border-top:1px solid var(--line)}
+.grp:first-child{border-top:none}
+.grp-hd{display:flex;align-items:center;gap:9px;padding:8px 14px 6px;background:#f4f7fb}
+.grp-nm{font-size:14.5px;font-weight:800;color:var(--navy);letter-spacing:-.3px}
+.grp-ct{font-size:12px;color:var(--mut);font-weight:600}
+.grp-al{font-size:12px;font-weight:800;color:#c62828;background:#fdecea;
+  padding:2px 9px;border-radius:10px}
+.grp-body{display:flex;flex-wrap:wrap;padding:9px 10px 11px;gap:9px}
+
+/* 거점별 기상 + 현황 입력 카드 */
+.sites{display:block}
+.st{flex:1 1 176px;min-width:168px;border:1px solid var(--line);border-radius:9px;
+  overflow:hidden;display:flex;flex-direction:column;background:#fff}
+.st-hd{padding:9px 7px 8px;text-align:center}
+.st .n{font-size:14.5px;font-weight:800;color:var(--navy);letter-spacing:-.3px}
+.st .i{font-size:24px;line-height:1.3}
+.st .t{font-size:19px;font-weight:800;letter-spacing:-.5px}
+.st .f{font-size:12px;color:#55617a}
+.st .f b{font-size:14px;color:#c62828;font-weight:800}
+.st .al{margin:6px auto 0;font-size:11.5px;font-weight:800;padding:2px 10px;border-radius:11px;
+  display:inline-block;border:1px solid rgba(0,0,0,.12)}
 /* 폭염특보 단계별 음영 */
-.st.a0{background:#fff}
-.st.a1{background:#fff6d9}                     /* 주의보  — 연노랑 */
-.st.a2{background:#ffddc2}                     /* 경보    — 주황   */
-.st.a3{background:#f8c4bd}                     /* 중대경보 — 적색   */
-.st .al{font-size:10.5px;font-weight:700;margin-top:3px;color:#6b7688}
-.st.a1 .al{color:#8a6100} .st.a2 .al{color:#a1470a} .st.a3 .al{color:#a4231a}
-/* 범례 */
-.legend{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mut);font-weight:400}
-.legend b{font-weight:700;color:var(--navy);margin-right:2px}
-.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;
-  border:1px solid rgba(0,0,0,.16);margin-left:6px}
-.legend i.a0{background:#fff} .legend i.a1{background:#fff6d9}
-.legend i.a2{background:#ffddc2} .legend i.a3{background:#f8c4bd}
-/* 거점별 주간예보 표 */
-.wtable{padding:4px 6px 8px;overflow-x:auto}
-.wrow{display:flex;align-items:stretch;min-width:470px;border-bottom:1px solid #f0f2f6}
-.wrow:last-child{border-bottom:none}
-.whead{border-bottom:1px solid var(--line);font-size:11px;color:var(--mut);text-align:center;
-  padding:5px 0;font-weight:700}
-.whead .wcell span{font-weight:400;font-size:10px}
-.whead .wcell.sat{color:#2563a8} .whead .wcell.sun{color:#c0392b}
-.wname{flex:0 0 128px;display:flex;flex-direction:column;justify-content:center;
-  padding:5px 8px 5px 10px;gap:3px}
-.wname .wn{font-size:12px;font-weight:700;color:var(--navy);line-height:1.25}
-.wname .wal{font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;
-  align-self:flex-start;border:1px solid rgba(0,0,0,.1);color:#6b7688}
-.wname .wal.a0{background:#f2f4f8}
-.wname .wal.a1{background:#fff6d9;color:#8a6100}
-.wname .wal.a2{background:#ffddc2;color:#a1470a}
-.wname .wal.a3{background:#f8c4bd;color:#a4231a}
-.wcell{flex:1;text-align:center;padding:5px 2px;border-left:1px dashed #eef1f5;font-size:11px}
-.wcell.mid{background:#fafbfd}
-.wcell .i{font-size:15px;line-height:1.2}
-.wcell .t{font-weight:600;font-size:11.5px}
-.wcell .t .mn{color:#2563a8} .wcell .t .mx{color:#c0392b}
-.wcell .p{color:#2563a8;font-size:10px}
-/* 발효 예정 특보 */
-
-/* ═══════════ 표 (원본 서식) ═══════════ */
-#sheet{background:#fff;padding:16px 20px 12px;border:1px solid var(--line);border-radius:8px;overflow-x:auto}
-#sheet .ttl{font-size:14pt;font-weight:700;margin-bottom:9px;font-family:"맑은 고딕",sans-serif}
-table.rep{border-collapse:collapse;table-layout:fixed;width:100%;min-width:1090px;
-  font-family:"맑은 고딕",sans-serif}
-table.rep col.c-b{width:104px}
-table.rep td{border:1px solid var(--bd);text-align:center;vertical-align:middle;
-  font-size:12pt;padding:3px 4px;word-break:break-word;white-space:pre-wrap;line-height:1.35}
-table.rep td.hd{background:var(--hd);font-weight:700}
-table.rep td.hd.dt{font-size:14pt}
-table.rep tr.r-h td{height:34px}
-table.rep tr.r-b td{height:46px}
-table.rep td.alert{color:var(--red);font-weight:700}
-table.rep td.note{font-size:11pt}
-table.rep td.etc{text-align:left;vertical-align:top;font-size:12pt;padding:6px 8px;height:64px}
-table.rep td.edit{cursor:pointer;background:#fffdf2}
-table.rep td.edit:hover{background:#fff6d6;outline:2px solid #e8c85a;outline-offset:-2px}
-table.rep td.locked{background:#fff}
-.foot-note{font-size:10pt;margin-top:3px;font-family:"맑은 고딕",sans-serif}
-
-.bar{display:flex;gap:8px;align-items:center;margin:12px 0 0;flex-wrap:wrap}
-.bar button{background:#fff;border:1px solid var(--line);color:var(--txt);font-weight:600}
-.bar button:hover{background:#f0f4fa}
-.bar button.pri{background:var(--navy);color:#fff;border-color:var(--navy)}
-.bar button.pri:hover{background:#2f5597}
-/* 복사 · 사진 다운로드 · 엑셀 다운로드 — 동일 크기/간격 */
-.bar button.act{min-width:136px;text-align:center}
-.bar button.act:disabled{opacity:.6;cursor:default}
-.bar button.act.done{background:#e8f6ee;border-color:#9fd6b8;color:#1f9254}
-.bar .sp{flex:1}
-.bar select{width:auto;min-width:150px}
-.tip{font-size:11.5px;color:var(--mut);padding:6px 2px}
-
-/* 편집 모달 */
-.mbg{position:fixed;inset:0;background:rgba(15,25,42,.55);z-index:150;display:none;
-  align-items:center;justify-content:center;padding:20px}
-.mbg.on{display:flex}
-.mdl{background:#fff;border-radius:10px;width:100%;max-width:520px;overflow:hidden}
-.mdl .h{background:var(--navy);color:#fff;padding:13px 17px;font-size:14px;font-weight:700;display:flex}
-.mdl .h .x{margin-left:auto;background:none;color:#fff;font-size:18px;padding:0 4px}
-.mdl .b{padding:16px 18px}
-.mdl .b textarea{min-height:110px;line-height:1.6;resize:vertical}
-.mdl .b .q{font-size:11.5px;color:var(--mut);margin-top:8px}
-.mdl .b .quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.mdl .b .quick button{background:#eef2f7;color:var(--navy);font-size:11.5px;padding:5px 10px}
-.mdl .f{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;background:#fafbfd}
-.mdl .f .sp{flex:1}
-.mdl .f .sv{background:var(--navy);color:#fff;font-weight:700;padding:9px 20px}
-.mdl .f .cc{background:#eef1f5;padding:9px 18px}
-
-/* 관리 페이지 */
-.adm-top{display:flex;align-items:center;gap:14px;margin:4px 0 14px}
-.adm-top h2{font-size:17px;color:var(--navy)}
-.adm-top .sp{flex:1}
-.adm-top .back{background:#fff;border:1px solid var(--line);color:var(--txt);font-weight:600;padding:8px 15px}
-.adm-top .back:hover{background:#eef2f7}
-.adm-top .adm-who{font-size:12px;color:var(--mut)}
-.tabs{display:flex;gap:4px;margin-bottom:-1px}
-.tab{background:#e7ecf3;color:var(--mut);font-weight:700;padding:9px 22px;
-  border-radius:8px 8px 0 0;font-size:13px}
-.tab.on{background:#fff;color:var(--navy);border:1px solid var(--line);border-bottom-color:#fff}
-.tabpane{border-radius:0 8px 8px 8px}
-
-/* 거점 관리 폼 */
-.site-form{display:flex;flex-wrap:wrap;gap:9px 11px;align-items:flex-end}
-.site-form .fl{display:flex;flex-direction:column;gap:4px}
-.site-form label{font-size:11px;font-weight:700;color:var(--mut)}
-.site-form input,.site-form select{width:auto;min-width:112px}
-.site-form .gw{flex:1;min-width:290px}
-.site-form .gw .addr-row{display:flex;gap:6px}
-.site-form .gw input{flex:1;min-width:180px}
-.site-form .sm input{width:106px} .site-form .xs input{width:62px}
-.site-form .geo{background:#eef2fb;color:#1d4e83;font-weight:700;white-space:nowrap;padding:7px 13px}
-.site-form .geo:hover{background:#dde7f7}
-.site-form .btns{flex-direction:row;gap:6px}
-.site-form .add{background:var(--navy);color:#fff;font-weight:700;padding:8px 17px}
-.site-form .add:hover{background:#2f5597}
-.site-form .cc{background:#eef1f5;color:var(--txt);padding:8px 15px}
-#geoResult:empty{display:none}
-#geoResult{margin-top:10px;padding:9px 12px;border-radius:7px;font-size:12px;line-height:1.7;
-  background:#f7f9fc;border:1px solid var(--line)}
-#geoResult .pick{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);
-  margin-top:5px;padding:6px 10px;font-size:11.5px;cursor:pointer;border-radius:5px}
-#geoResult .pick:hover{background:#eef2fb;border-color:#9dbbe4}
-#siteList table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
-#siteList th{background:#f2f5f9;padding:7px 8px;text-align:left;border-bottom:1px solid var(--line);
-  font-size:11px;color:var(--mut);white-space:nowrap}
-#siteList td{padding:6px 8px;border-bottom:1px solid #eef1f5;vertical-align:middle}
-#siteList tr.editing td{background:#fffdf2}
-#siteList .g{font-family:monospace;font-size:11.5px;color:#4a5768}
-#siteList .act button{padding:4px 9px;font-size:11px;background:#eef1f5;color:var(--txt);margin-left:3px}
-#siteList .act button.del{background:#fdecea;color:var(--red)}
-
-/* 사용자 관리 */
-.usr-body{padding:13px 15px}
-.usr-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.usr-form select{width:auto;min-width:132px}
-.usr-form input{width:auto;min-width:150px}
-.usr-form button{padding:8px 17px;font-weight:700}
-.usr-form .add{background:var(--navy);color:#fff}
-.usr-form .add:hover{background:#2f5597}
-.usr-form .cc{background:#eef1f5;color:var(--txt)}
-.usr-hint{font-size:11.5px;color:var(--mut);line-height:1.7;margin:9px 0 11px}
-#usrList table{width:100%;border-collapse:collapse;font-size:12.5px}
-#usrList th{background:#f2f5f9;padding:7px 9px;text-align:left;border-bottom:1px solid var(--line);
+.st.a0 .st-hd{background:#f7f9fc}          .st.a0 .al{background:#eef1f5;color:#55617a}
+.st.a1 .st-hd{background:#fff3c4}          .st.a1 .al{background:#ffe38a;color:#7a5600}
+.st.a2 .st-hd{background:#ffb877}          .st.a2 .al{background:#f2820a;color:#fff;border-color:#d9730a}
+.st.a3 .st-hd{background:#e05a4e;color:#fff} .st.a3 .al{background:#8e1b10;color:#fff;border-color:#7d1710}
+.st.a3 .n,.st.a3 .t{color:#fff}
+.st.a3 .f{color:#ffe3df} .st.a3 .f b{color:#fff}
+/* 입력 칸 */
+.st .in{border-top:1px solid var(--line);padding:6px 9px 7px;min-height:56px}
+.st .in-lb{font-size:10.5px;font-weight:800;color:var(--mut);margin-bottom:2px}
+.st .in-tx{font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word;color:#2b3547}
+.st .in-tx.empty{color:#b3bccb}
+.st .in.edit{cursor:pointer;background:#fffdf3}
+.st .in.edit:hover{background:#fff6d6;outline:2px solid #e8c85a;outline-offset:-2px}
+.st .in.editing{background:#fff;outline:2px solid var(--navy);outline-offset:-2px}
+.in-ed{width:100%;font-family:inherit;font-size:12px;line-height:1.5;border:1px solid var(--line);
+  border-radius:4px;padding:4px 6px;resize:vertical;min-height:48px;background:#fff}
+.in-ed.tall{min-height:64px;font-size:13px}
+.in-ed:focus{outline:2px solid #b9d3f0;outline-offset:-1px}
+.in-tip{font-size:9.5px;color:var(--mut);margin-top:3px;line-height:1.4}
+/* 기타사항 */
+.etc-wrap{display:flex;border-top:1px solid var(--line)}
+.etc-lb{flex:0 0 104px;padding:11px 12px;font-size:13px;font-weight:800;color:var(--navy);
+  background:#f7f9fc;border-right:1px solid var(--line);display:flex;align-items:center}
+.etc-box{flex:1;padding:11px 14px;font-size:13px;line-height:1.65;white-space:pre-wrap;
+  min-height:52px;color:#2b3547}
+.etc-box .empty{color:#b3bccb}
+.etc-box.editing{background:#fff;outline:2px solid var(--navy);outline-offset:-2px}
+.etc-box.edit{cursor:pointer;background:#fffdf3}
+.etc-box.edit:hover{background:#fff6d6;outline:2px solid #e8c85a;outline-offset:-2px}
+/* 범례 — 크게 */
+.legend{display:flex;align-items:center;gap:5px;font-size:13px;color:#44506a;font-weight:600}
+.legend b{font-weight:800;color:var(--navy);margin-right:4px;font-size:13px}
+.legend i{display:inline-block;width:17px;height:17px;border-radius:4px;
+  border:1px solid rgba(0,0,0,.18);margin-left:9px;vertical-align:-3px}
+.legend i.a0{background:#f7f9fc} .legend i.a1{background:#fff3c4}
+.legend i.a2{background:#f2820a} .legend i.a3{background:#8e1b10}
+/* 확정 이력 */
+#histList table{width:100%;border-collapse:collapse;font-size:12.5px}
+#histList th{background:#f2f5f9;padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);
   font-size:11.5px;color:var(--mut)}
-#usrList td{padding:6px 9px;border-bottom:1px solid #eef1f5}
-#usrList tr.editing td{background:#fffdf2}
-#usrList .lv{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
-#usrList .lv.user{background:#eef2f7;color:#4a5768}
-#usrList .lv.manager{background:#e4edfb;color:#1d4e83}
-#usrList .act button{padding:4px 10px;font-size:11.5px;background:#eef1f5;color:var(--txt);margin-left:4px}
-#usrList .act button.del{background:#fdecea;color:var(--red)}
-#usrList .act button:hover{filter:brightness(.95)}
+#histList td{padding:7px 10px;border-bottom:1px solid #eef1f5}
+#histList td.sm{font-size:11.5px;color:#55617a}
+#histList button{padding:4px 11px;font-size:11.5px;background:#eef1f5;color:var(--txt)}
+#histList .hist-none{padding:20px;text-align:center;color:var(--mut);font-size:12.5px}
+.bar .fix{background:#1f9254;color:#fff;border-color:#1f9254;min-width:190px;
+  font-size:14px;font-weight:800;padding:11px 24px}
+.bar .fix:hover{background:#17703f}
+.bar .fix.done{background:#e8f6ee;color:#1f9254;border-color:#9fd6b8}
+.bar .fix-t{font-size:12.5px;color:var(--navy);font-weight:700}
 
-/* 로그 */
-#logView{display:none;max-height:320px;overflow:auto}
-#logView table{width:100%;border-collapse:collapse;font-size:11.5px}
-#logView th{background:#f2f5f9;position:sticky;top:0;padding:6px 8px;text-align:left;border-bottom:1px solid var(--line)}
-#logView td{padding:5px 8px;border-bottom:1px solid #eef1f5}
-#logView td.o{color:var(--mut);text-decoration:line-through;font-size:11px}
-
-@media print{ .top,.bar,.panel,.tip,#logView{display:none!important}
-  body{background:#fff} .wrap{padding:0} #sheet{border:none;padding:0} }
+@media print{ .top,.bar,.tip,  body{background:#fff} .wrap{padding:0} }
 </style>
 </head>
 <body>
 
 <!-- ══════ 로그인 ══════ -->
-<div id="login">
-  <div class="box">
-    <h1>국내사업부 주요거점 폭염 현황</h1>
-
-    <!-- 일반 로그인 -->
-    <div id="usrPane">
-      <div class="sub">소속 거점을 선택하고 이름을 입력하세요</div>
-      <label>소속</label>
-      <select id="lgSite"></select>
-      <label>이름</label>
-      <input id="lgName" placeholder="성명 입력" onkeydown="if(event.key==='Enter')doLogin()">
-      <button onclick="doLogin()">로그인</button>
-      <button class="adm" onclick="showAdm(true)">🔑 관리자 접속</button>
-    </div>
-
-    <!-- 관리자 접속 -->
-    <div id="admPane">
-      <div class="sub">관리자 접속코드를 입력하세요</div>
-      <label>접속코드</label>
-      <input id="lgCode" type="password" placeholder="접속코드 입력"
-             onkeydown="if(event.key==='Enter')doAdmin()">
-      <button onclick="doAdmin()">접속</button>
-      <button class="adm" onclick="showAdm(false)">← 일반 로그인으로</button>
-    </div>
-
-    <div class="err" id="lgErr"></div>
-    <div class="cr">©2026 김원상 All rights reserved.</div>
-  </div>
-</div>
-
 <!-- ══════ 상단바 ══════ -->
-<div class="top" id="topbar" style="display:none">
+<div class="top" id="topbar">
   <b>국내사업부 주요거점 폭염 현황</b>
-  <span class="me" id="meTag"></span>
   <span id="dbTag" style="font-size:11.5px"></span>
   <span class="sp"></span>
-  <button onclick="toggleUsr()" id="btnUsr">⚙ 관리 페이지</button>
-  <button onclick="toggleLog()" id="btnLog">📋 로그</button>
-  <button onclick="logout()">로그아웃</button>
+  <span class="code-box">
+    <span class="code-lb" id="codeState">조회 전용</span>
+    <input id="codeIn" type="password" placeholder="사용자 코드" autocomplete="off"
+           onkeydown="if(event.key==='Enter')applyCode()">
+    <button onclick="applyCode()" id="codeBtn">확인</button>
+    <button onclick="lockCode()" id="codeOff" style="display:none">잠금</button>
+  </span>
   <span class="crTop">©2026 김원상 All rights reserved.</span>
 </div>
 
-<div class="wrap" id="app" style="display:none">
+<div class="wrap" id="app">
 
   <!-- 새로고침 (전체 공통) -->
   <div class="refbar">
     <button id="btnRef" onclick="refreshNow()">↻ 새로고침</button>
     <span class="ref-t" id="refTime"></span>
     <span class="sp"></span>
-    <span class="ref-hint">기상현황 · 체감온도 · 폭염특보와 표의 기준시각을 현재 시점으로 갱신합니다</span>
+    <span class="ref-hint">기상현황 · 체감온도 · 폭염특보와 기준시각을 현재 시점으로 갱신합니다</span>
   </div>
 
   <div id="netBar" style="display:none"></div>
 
-  <!-- 특이사항 요약 -->
+  <!-- 폭염현황 요약 -->
   <div class="panel">
-    <div class="p-hd"><span>특이사항</span><span class="t" id="natTime"></span></div>
+    <div class="p-hd big-hd"><span id="sumTitle">폭염현황</span></div>
     <div class="nat"><div class="big" id="natSummary">—</div></div>
   </div>
 
-  <!-- 거점별 주간예보 -->
-  <div class="panel">
-    <div class="p-hd"><span>거점별 주간예보</span>
-      <span class="t">최저/최고(℃) · 강수확률 &nbsp;|&nbsp; 3일차까지 거점 격자, 이후 광역 예보</span></div>
-    <div class="wtable">
-      <div class="wrow whead" id="weekHead"></div>
-      <div id="weekSites"></div>
+  <!-- 거점별 기상 + 현황 입력 -->
+  <div id="board">
+    <div class="panel">
+      <div class="p-hd big-hd"><span>거점별 현재 기상 · 체감온도</span>
+        <span class="sp"></span>
+        <span class="legend">
+          <b>폭염특보</b>
+          <i class="a0"></i>없음
+          <i class="a1"></i>주의보
+          <i class="a2"></i>경보
+          <i class="a3"></i>중대경보
+        </span></div>
+      <div class="sites" id="siteStrip"></div>
+      <div class="etc-wrap">
+        <div class="etc-lb">기타사항</div>
+        <div class="etc-box" id="etcBox">—</div>
+      </div>
     </div>
-  </div>
-
-
-  <!-- 거점 현재 기상 -->
-  <div class="panel">
-    <div class="p-hd"><span>거점별 현재 기상 · 체감온도</span>
-      <span class="t" id="siteTime"></span>
-      <span class="sp"></span>
-      <span class="legend">
-        <b>폭염특보</b>
-        <i class="a0"></i>없음
-        <i class="a1"></i>주의보
-        <i class="a2"></i>경보
-        <i class="a3"></i>중대경보
-      </span></div>
-    <div class="sites" id="siteStrip"></div>
-  </div>
-
-  <!-- 로그 -->
-  <div class="panel" id="logView">
-    <div class="p-hd"><span>입력 로그</span><span class="sp"></span>
-      <button onclick="downloadLog()">↓ CSV 다운로드</button>
-      <button onclick="toggleLog()">닫기</button></div>
-    <div id="logBody"></div>
-  </div>
-
-  <!-- 표 -->
-  <div id="sheet">
-    <div class="ttl">■ 국내사업부 주요거점 폭염 현황</div>
-    <div id="tblBox"></div>
-    <div class="foot-note">※ 폭염특보 : 없음 / 주의보 / 경보 / 중대경보</div>
   </div>
 
   <div class="bar">
-    <select id="dateSel" onchange="loadDate(this.value)"></select>
-    <span class="sp"></span>
+    <button class="act fix" id="btnFix" onclick="confirmBoard()">✔ 폭염현황 확정</button>
     <button class="act" id="btnCopy" onclick="copyImg()">📋 복사</button>
-    <button class="act" id="btnShot" onclick="capture()">📷 사진 다운로드</button>
-    <button class="act pri" onclick="toXlsx()">⬇ 엑셀 다운로드</button>
+    <span class="sp"></span>
+    <span class="fix-t" id="fixTime"></span>
   </div>
   <div class="tip" id="tip"></div>
-</div>
 
-<!-- ══════ 관리 페이지 (최고관리자 전용) ══════ -->
-<div class="wrap" id="adminPage" style="display:none">
-  <div class="adm-top">
-    <button class="back" onclick="closeAdminPage()">← 현황판으로</button>
-    <h2>관리 페이지</h2>
-    <span class="sp"></span>
-    <span class="adm-who" id="admWho"></span>
+  <!-- 확정 이력 -->
+  <div class="panel" id="histPanel">
+    <div class="p-hd"><span>확정 이력</span><span class="t" id="histCnt"></span>
+      <span class="sp"></span>
+      <button onclick="loadHist()">↻ 새로 읽기</button></div>
+    <div id="histList"></div>
   </div>
 
-  <div class="tabs">
-    <button class="tab on" data-tab="users" onclick="admTab('users')">사용자 관리</button>
-    <button class="tab" data-tab="sites" onclick="admTab('sites')">거점 · 주소 관리</button>
-  </div>
-
-  <!-- 사용자 관리 -->
-  <div class="panel tabpane" id="tab-users">
-    <div class="p-hd"><span>사용자 목록</span><span class="t" id="usrCnt"></span></div>
-    <div class="usr-body">
-      <div class="usr-form">
-        <select id="uSite"></select>
-        <input id="uName" placeholder="이름" onkeydown="if(event.key==='Enter')submitUser()">
-        <select id="uLevel">
-          <option value="user">일반사용자</option>
-          <option value="manager">관리자</option>
-        </select>
-        <button class="add" id="uBtn" onclick="submitUser()">+ 추가</button>
-        <button class="cc" id="uCancel" style="display:none" onclick="resetUserForm()">취소</button>
-      </div>
-      <div class="usr-hint">
-        일반사용자 = 자기 거점 칸만 입력 · 관리자 = 표 전체 입력(로그·관리 페이지 접근 불가)<br>
-        소속을 <b>국내사업부장</b>으로 등록하면 표 하단 기타사항만 입력할 수 있습니다.
-        최고관리자는 접속코드로만 들어옵니다.
-      </div>
-      <div id="usrList"></div>
-    </div>
-  </div>
-
-  <!-- 거점 관리 -->
-  <div class="panel tabpane" id="tab-sites" style="display:none">
-    <div class="p-hd"><span>거점 목록</span><span class="t" id="siteCnt"></span></div>
-    <div class="usr-body">
-      <div class="site-form">
-        <div class="fl"><label>거점명</label><input id="sName" placeholder="예: 군산"></div>
-        <div class="fl gw"><label>주소</label>
-          <div class="addr-row">
-            <input id="sAddr" placeholder="예: 전북 군산시 서해로 194">
-            <button class="geo" id="sGeo" onclick="geocodeSite()">주소로 좌표 찾기</button>
-          </div>
-        </div>
-        <div class="fl sm"><label>위도</label><input id="sLat" placeholder="35.97328"></div>
-        <div class="fl sm"><label>경도</label><input id="sLon" placeholder="126.57321"></div>
-        <div class="fl xs"><label>nx</label><input id="sNx" placeholder="53"></div>
-        <div class="fl xs"><label>ny</label><input id="sNy" placeholder="92"></div>
-        <div class="fl sm"><label>특보 시·군명</label><input id="sArea" placeholder="군산"></div>
-        <div class="fl sm"><label>발표관서</label>
-          <select id="sStn">
-            <option value="109">서울·경기 (109)</option>
-            <option value="133">대전·충남 (133)</option>
-            <option value="146">전북 (146)</option>
-            <option value="156">광주·전남 (156)</option>
-            <option value="143">대구·경북 (143)</option>
-            <option value="159">부산·경남 (159)</option>
-            <option value="105">강원 (105)</option>
-            <option value="131">충북 (131)</option>
-            <option value="184">제주 (184)</option>
-          </select></div>
-        <div class="fl btns">
-          <button class="add" id="sBtn" onclick="submitSite()">+ 추가</button>
-          <button class="cc" id="sCancel" style="display:none" onclick="resetSiteForm()">취소</button>
-        </div>
-      </div>
-      <div id="geoResult"></div>
-      <div class="usr-hint">
-        주소를 입력하고 <b>주소로 좌표 찾기</b>를 누르면 위도·경도와 기상청 격자(nx, ny)가 자동으로 채워집니다.<br>
-        <b>특보 시·군명</b>은 기상청 특보 통보문에 쓰이는 이름입니다 (예: 장항 → <code>서천</code>, 부산신항 → <code>부산</code>).<br>
-        <b style="color:var(--red)">거점을 추가·삭제하면 폭염 현황표의 열 구성이 바뀝니다.</b> 신중히 변경하세요.
-      </div>
-      <div id="siteList"></div>
-    </div>
-  </div>
-</div>
-
-<!-- 편집 모달 -->
-<div class="mbg" id="mbg">
-  <div class="mdl">
-    <div class="h"><span id="mTtl"></span><button class="x" onclick="closeM()">×</button></div>
-    <div class="b">
-      <textarea id="mTx" placeholder="특이사항을 입력하세요"></textarea>
-      <div class="quick">
-        <button onclick="qk('특이사항 없음')">특이사항 없음</button>
-        <button onclick="qk('작업 간 휴식 제공 중')">작업 간 휴식 제공 중</button>
-        <button onclick="qk('옥외작업 일시 중단')">옥외작업 일시 중단</button>
-      </div>
-      <div class="q" id="mQ"></div>
-    </div>
-    <div class="f"><span class="sp"></span>
-      <button class="cc" onclick="closeM()">취소</button>
-      <button class="sv" onclick="saveM()">저장</button></div>
-  </div>
 </div>
 
 <script>
@@ -524,23 +286,14 @@ const HQ_SITE={id:'hqSeoul', name:'본사(서울)', addr:'서울 중구 을지�
 // 기상 수집 대상 = 본사 + 10개 거점
 const WX_SITES=[HQ_SITE, ...SITES];
 
-/* 주간예보 행 구성 — 같은 좌표를 쓰는 거점은 묶어서 한 줄로 */
-const WEEK_ROWS=[
-  {label:'본사(서울)',     ids:['hqSeoul']},
-  {label:'군산 / 군산 CY', ids:['gunsan','gsCY']},
-  {label:'장항',           ids:['janghang']},
-  {label:'대전',           ids:['daejeon']},
-  {label:'천안',           ids:['cheonan']},
-  {label:'신탄진 / 신탄진 CY', ids:['sintanjin','stjCY']},
-  {label:'부산신항',       ids:['busanNP']},
-  {label:'아산 CY',        ids:['asanCY']},
-  {label:'의왕',           ids:['uiwang']}
+/* 화면 표시 그룹 — 계열 6개소 / 컨테이너 4개소 */
+const GROUPS=[
+  {label:'계열',      ids:['gunsan','janghang','daejeon','cheonan','sintanjin','busanNP']},
+  {label:'컨테이너',  ids:['stjCY','gsCY','asanCY','uiwang']}
 ];
 const ALERT_LV=['없음','주의보','경보','중대경보'];
 const ALERT_CLS={'없음':'a0','주의보':'a1','경보':'a2','중대경보':'a3'};
-const HQ={id:'HQ',name:'국내사업부장'};
 // 로그인 드롭다운 : 국내사업부장 최상단 + 나머지 가나다순
-const LOGIN_LIST=[HQ, ...SITES.slice().sort((a,b)=>a.name.localeCompare(b.name,'ko'))];  // rebuildDerived() 로 갱신
 const ROWS=[{k:'worker',label:'근로자'},{k:'facility',label:'제품 (시설)'},{k:'transport',label:'운송'}];
 
 /* ── 공공데이터포털 인증키 (기상청 단기예보·중기예보·기상특보 공통) ──
@@ -557,17 +310,12 @@ const API_PROXY=(location.protocol==='http:'||location.protocol==='https:') ? '/
    연결이 안 되면 자동으로 이 브라우저 저장소만 쓰고, 복구되면 다시 올립니다. */
 const FB='https://weather-5eb52-default-rtdb.asia-southeast1.firebasedatabase.app';
 
-const K={db:'heatDB',log:'heatLOG',cfg:'heatCFG',ses:'heatSES',usr:'heatUSERS'};
-/* 등록 사용자 — { id, site, name, level:'user'|'manager' }
-   level  user    : 일반사용자 (자기 거점만 / 국내사업부장이면 기타사항)
-          manager : 관리자 (표 전체 입력, 로그 조회 불가)
-   최고관리자는 접속코드 skingws 로만 들어온다. */
-let USERS=[];
+const K={db:'heatDB',log:'heatLOG',cfg:'heatCFG',ses:'heatSES'};
 let DB={}, LOG=[], SES=null;
 let CFG={key:API_KEY, proxy:API_PROXY, mode:'live'};
 let NETFAIL=null, NETFAIL_MSG='';        // 실시간 조회 실패 사유
 let VIEW=null;              // 현재 조회중인 날짜 YYYY-MM-DD
-let LIVE={sites:{},week:[],weekBySite:{},pending:[],at:null};   // 실시간(현재) 기상
+let LIVE={sites:{},pending:[],at:null};   // 실시간(현재) 기상
 
 const S={g:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
          s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -655,6 +403,13 @@ const KMA={
       {pageNo:1,numOfRows:1000,base_date:ymd(d),base_time:pad(h)+'00',nx,ny}));
     const j=await r.json(); return j?.response?.body?.items?.item||[];
   },
+  async sky(nx,ny){                                      // 초단기예보 SKY
+    const d=new Date(Date.now()-50*60000);
+    const r=await fetch(this.url('VilageFcstInfoService_2.0/getUltraSrtFcst',
+      {pageNo:1,numOfRows:30,base_date:ymd(d),base_time:pad(d.getHours())+'30',nx,ny}));
+    const j=await r.json(), it=j?.response?.body?.items?.item||[];
+    const v=it.find(x=>x.category==='SKY'); return v?+v.fcstValue:1;
+  },
   /* 기상특보 통보문 — t6 에 발효 현황이 구역까지 들어 있다.
      ※ 주의 : tmFc(발표시각)와 t5(발효시각)가 다르다.
         "07/29 16시 발표 / 07/30 11시 발효" 처럼 미래에 적용될 통보문이 섞여 있어서
@@ -734,22 +489,11 @@ const DEMO={
   asanCY:{sky:3,pty:0,ta:30.9,rh:71,wsd:1.9}, uiwang:{sky:4,pty:0,ta:31.0,rh:70,wsd:1.6}
 };
 
-function demoWeek(){
-  const a=[];
-  for(let i=0;i<4;i++){
-    const d=new Date(); d.setDate(d.getDate()+i);
-    const sky=[4,3,1,1,3,4,3][i], pop=[30,20,0,0,20,60,30][i];
-    a.push({date:d, sky, pty:0, pop, mn:[24,25,25,26,26,24,23][i], mx:[33,34,35,36,34,31,30][i]});
-  }
-  return a;
-}
 
 function fillDemo(at){
   WX_SITES.forEach(s=>{const d=DEMO[s.id]||{sky:3,pty:0,ta:31.0,rh:70,wsd:2.0};
     LIVE.sites[s.id]={...d,feels:feels(d.ta,d.rh,d.wsd),alert:heatAlert(feels(d.ta,d.rh,d.wsd))}});
-  LIVE.week=demoWeek(); LIVE.at=at;
-  LIVE.weekBySite={}; WEEK_ROWS.forEach(r=>LIVE.weekBySite[r.ids[0]]=demoWeek());
-  LIVE.pending=[];
+  LIVE.at=at; LIVE.pending=[];
 }
 
 async function collect(){
@@ -758,34 +502,25 @@ async function collect(){
   if(CFG.mode!=='live'||!CFG.key){ fillDemo(at); return {ok:0,fail:0,demo:true} }
   let ok=0,fail=0, lastErr='';
 
-  // ① 예보 먼저 — 행 대표 거점만 (같은 좌표 중복 호출 방지). 하늘상태도 여기서 얻는다.
-  LIVE.weekBySite={};
-  await Promise.all(WEEK_ROWS.map(async row=>{
-    const s=WX_SITES.find(x=>x.id===row.ids[0]);
-    if(!s) return;
-    try{ LIVE.weekBySite[row.ids[0]]=await buildWeek(s) }
-    catch(e){ LIVE.weekBySite[row.ids[0]]=null }
-  }));
-  const skyOf={};                                   // 거점 → 오늘 하늘상태
-  WEEK_ROWS.forEach(row=>{
-    const w=LIVE.weekBySite[row.ids[0]];
-    const v=skyNow(w);
-    row.ids.forEach(id=>skyOf[id]=v);
-  });
+  // ① 같은 격자를 쓰는 거점은 한 번만 조회한다 (호출 수 최소화)
+  const grids={};
+  WX_SITES.forEach(s=>{ const k=s.nx+','+s.ny; (grids[k]=grids[k]||[]).push(s) });
+  const keys=Object.keys(grids);
+  const g0=grids[keys[0]][0];
+  try{ await KMA.ncst(g0.nx,g0.ny) }catch(e){}      // 실황 기준시각 먼저 확정
 
-  // ② 실황 — 기준시각을 한 번 찾은 뒤 나머지는 1회 호출
-  try{ await KMA.ncst(WX_SITES[0].nx, WX_SITES[0].ny) }catch(e){}
-  await Promise.all(WX_SITES.map(async s=>{
+  await Promise.all(keys.map(async k=>{
+    const [nx,ny]=k.split(',').map(Number);
+    const mine=grids[k];
     try{
-      const n=await KMA.ncst(s.nx,s.ny);
+      const [n,sk]=await Promise.all([KMA.ncst(nx,ny), KMA.sky(nx,ny).catch(()=>1)]);
       const f=feels(n.T1H,n.REH,n.WSD);
-      const sk=skyOf[s.id]||{sky:1,pty:0};
-      LIVE.sites[s.id]={sky:sk.sky??1, pty:(n.PTY||sk.pty||0), ta:n.T1H, rh:n.REH, wsd:n.WSD,
-                        feels:f, alert:heatAlert(f)};
-      ok++;
-    }catch(e){fail++;lastErr=e.message;console.warn(s.name,e.message)}
+      mine.forEach(s=>{ LIVE.sites[s.id]={sky:sk, pty:n.PTY||0, ta:n.T1H, rh:n.REH,
+                                          wsd:n.WSD, feels:f, alert:heatAlert(f)} });
+      ok+=mine.length;
+    }catch(e){ fail+=mine.length; lastErr=e.message; console.warn(k,e.message) }
   }));
-  if(ok===0){                                       // 전 거점 실패 → 데모로 전환
+  if(ok===0){                                       // 전부 실패 → 데모로 전환
     NETFAIL = /SERVICE|KEY|등록되지|LIMITED/i.test(lastErr) ? 'key'
             : (CFG.proxy ? 'proxy' : 'cors');
     NETFAIL_MSG = lastErr;
@@ -818,40 +553,9 @@ async function collect(){
     });
   }catch(e){ console.warn('폭염특보 조회 실패', e.message) }
 
-  LIVE.week=LIVE.weekBySite['daejeon']||[];
   LIVE.at=at; return {ok,fail};
 }
 
-/* 단기예보 3일 (D+0 ~ D+2) — 거점 격자(5km) 기준
-   중기예보는 쓰지 않는다. 호출 수를 줄여 화면이 빨리 뜨게 한 선택.
-   오늘의 하늘상태도 이 응답에서 뽑아 별도 호출을 없앴다. */
-const FC_DAYS=3;
-async function buildWeek(site){
-  const out=[];
-  const items=await KMA.vilage(site.nx, site.ny).catch(()=>[]);
-  const byDay={};
-  items.forEach(i=>{ (byDay[i.fcstDate]=byDay[i.fcstDate]||[]).push(i) });
-  for(let i=0;i<FC_DAYS;i++){
-    const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+i);
-    const arr=byDay[ymd(d)]||[];
-    if(!arr.length){ out.push({date:d, near:true, sky:null, pty:0, pop:null, mn:null, mx:null}); continue }
-    const pick=(c,t)=>arr.find(x=>x.category===c&&(!t||x.fcstTime===t))?.fcstValue;
-    const num=c=>arr.filter(x=>x.category===c).map(x=>+x.fcstValue).filter(v=>!isNaN(v));
-    const tmps=num('TMP'), pops=num('POP');
-    const mn=parseFloat(pick('TMN')), mx=parseFloat(pick('TMX'));
-    out.push({date:d, near:true,
-      sky:+(pick('SKY','1200')||pick('SKY')||1), pty:+(pick('PTY','1200')||0),
-      pop:pops.length?Math.max(...pops):0,
-      mn:isNaN(mn)?(tmps.length?Math.min(...tmps):null):mn,
-      mx:isNaN(mx)?(tmps.length?Math.max(...tmps):null):mx});
-  }
-  return out;
-}
-/* 지금 시각에 가까운 하늘상태·강수형태를 단기예보에서 뽑는다 */
-function skyNow(week){
-  const t=week&&week[0];
-  return t ? {sky:t.sky??1, pty:t.pty??0} : {sky:1,pty:0};
-}
 
 /* ════════════════════════════════════════════════════════════
    5. 일자별 스냅샷 (매일 14시 기준 자동 확정)
@@ -955,32 +659,6 @@ async function pushWx(dstr, d){
 async function pushLog(entry){
   try{ await fbPush('/logs', entry) }catch(e){}
 }
-/* ── 사용자 명부 ─────────────────────────────────────────── */
-async function pullUsers(){
-  try{
-    const o=await fbGet('/users'); DBOK=true;
-    USERS=Object.entries(o||{}).map(([id,v])=>({id, site:v.site, name:v.name, level:v.level||'user'}))
-                .filter(u=>u.site&&u.name);
-    S.s(K.usr,USERS);
-  }catch(e){ if(e.status!==401) DBOK=false; USERS=S.g(K.usr,[]) }   // 실패 시 마지막 명부 사용
-  return USERS;
-}
-async function saveUser(u){
-  const body={site:u.site, name:u.name, level:u.level};
-  if(u.id) await fbSend(`/users/${u.id}`, body, 'PUT');
-  else { const r=await fbPush('/users', body); u.id=r&&r.name }
-  await pullUsers(); return u;
-}
-async function deleteUser(id){
-  const r=await fetch(`${FB}/users/${id}.json`, {method:'DELETE'});
-  if(!r.ok) throw dbErr(r.status,'/users');
-  await pullUsers();
-}
-function findUser(site,name){
-  const n=String(name).trim();
-  return USERS.find(u=>u.site===site && u.name===n) || null;
-}
-
 /* 저장 가능한 일자 목록 */
 async function pullDates(){
   try{ const o=await fbGet('/days?shallow=true'); DBOK=true;
@@ -993,7 +671,7 @@ async function syncTick(){
   SYNCING=true;
   try{ const before=JSON.stringify(day(VIEW));
        await pullDay(VIEW);
-       if(JSON.stringify(day(VIEW))!==before) guard(renderTable,'표');
+       if(JSON.stringify(day(VIEW))!==before) guard(renderBoard,'거점 현황');
        renderDbTag();
   }finally{ SYNCING=false }
 }
@@ -1047,63 +725,47 @@ function save(){ S.s(K.db,DB); S.s(K.log,LOG) }
 /* ════════════════════════════════════════════════════════════
    6. 로그인 / 권한
    ════════════════════════════════════════════════════════════ */
-/* 접속코드 → 권한
-   skingws    : 관리자      — 전 칸 입력 + 로그 조회/다운로드
-   rkdtmdwns  : 일반관리자  — 전 칸 입력, 로그 조회 불가
-   rlarhkdqja : 통합입력자  — 전 칸 입력, 로그 조회 불가              */
-const CODES={ skingws:   {role:'admin', label:'관리자'},
-              rkdtmdwns: {role:'super', label:'일반관리자'},
-              rlarhkdqja:{role:'super', label:'통합입력자'} };
+/* ── 사용자 코드 ─────────────────────────────────────────────
+   코드 admin 을 넣으면 입력·수정이 열린다. 그 외에는 조회 전용. */
+const EDIT_CODE='admin';
+let UNLOCKED=false, WHO='조회자';
 
-function showAdm(on){
-  document.getElementById('usrPane').style.display = on?'none':'block';
-  document.getElementById('admPane').style.display = on?'block':'none';
-  document.getElementById('lgErr').textContent='';
-  if(on) setTimeout(()=>document.getElementById('lgCode').focus(),50);
+function applyCode(){
+  const el=document.getElementById('codeIn');
+  const v=(el.value||'').trim();
+  if(v===EDIT_CODE){
+    UNLOCKED=true; WHO='관리자';
+    el.value=''; el.style.display='none';
+    document.getElementById('codeBtn').style.display='none';
+    document.getElementById('codeOff').style.display='';
+    document.getElementById('codeState').textContent='입력 가능';
+    document.getElementById('codeState').className='code-lb on';
+    try{ sessionStorage.setItem('heatUnlock','1') }catch(e){}
+    guard(renderBoard,'거점 현황');
+  }else{
+    el.value=''; el.focus();
+    document.getElementById('codeState').textContent='코드가 맞지 않습니다';
+    document.getElementById('codeState').className='code-lb ng';
+    setTimeout(()=>{ if(!UNLOCKED){
+      document.getElementById('codeState').textContent='조회 전용';
+      document.getElementById('codeState').className='code-lb'; } },2200);
+  }
 }
-function doLogin(){
-  const site=document.getElementById('lgSite').value;
-  const name=document.getElementById('lgName').value.trim();
-  const err=document.getElementById('lgErr');
-  if(!name){ err.textContent='이름을 입력하세요.'; return }
-  if(!USERS.length){
-    err.innerHTML='등록된 사용자가 없습니다.<br>관리자에게 사용자 등록을 요청하세요.'; return }
-  const u=findUser(site,name);
-  if(!u){ err.innerHTML='등록되지 않은 사용자입니다.<br>소속과 이름을 확인하세요.'; return }
-  SES={site, name:u.name, uid:u.id,
-       role: u.level==='manager' ? 'super' : (site==='HQ' ? 'hq' : 'site')};
-  S.s(K.ses,SES);
-  addLog('로그인', SES.name, siteName(site), u.level==='manager'?'관리자':'일반사용자','','');
-  save(); start();
+function lockCode(){
+  UNLOCKED=false; WHO='조회자';
+  const el=document.getElementById('codeIn');
+  el.style.display=''; el.value='';
+  document.getElementById('codeBtn').style.display='';
+  document.getElementById('codeOff').style.display='none';
+  document.getElementById('codeState').textContent='조회 전용';
+  document.getElementById('codeState').className='code-lb';
+  try{ sessionStorage.removeItem('heatUnlock') }catch(e){}
+  guard(renderBoard,'거점 현황');
 }
-function doAdmin(){
-  const el=document.getElementById('lgCode'), c=el.value.trim();
-  const hit=CODES[c];
-  if(!hit){ document.getElementById('lgErr').textContent='접속코드가 올바르지 않습니다.';
-    el.value=''; el.focus(); return }
-  SES={site:'ALL', name:hit.label, role:hit.role};
-  S.s(K.ses,SES);
-  addLog('로그인', hit.label, hit.label, '-','','');
-  save(); start();
-}
-function logout(){ addLog('로그아웃',SES.name,siteName(SES.site),'-','',''); save();
-  SES=null; localStorage.removeItem(K.ses); location.reload() }
-function siteName(id){ return id==='HQ'?'국내사업부장'
-  : id==='ALL'?(SES?.name||'관리자') : (SITES.find(s=>s.id===id)?.name||id) }
-
-const isAll   = ()=> SES && (SES.role==='admin'||SES.role==='super');
-function canViewLog(){ return SES && SES.role==='admin' }          // 최고관리자 전용
-function isRoot(){ return SES && SES.role==='admin' }              // 사용자 관리 권한
-function canEditNote(siteId){
-  if(!SES) return false;
-  if(isAll()) return true;                                          // 전 칸 + 과거일자 포함
-  return SES.role==='site' && SES.site===siteId && VIEW===today();
-}
-function canEditEtc(){
-  if(!SES) return false;
-  if(isAll()) return true;
-  return SES.role==='hq' && VIEW===today();
-}
+function canEdit(){ return UNLOCKED && VIEW===today() }
+function canEditNote(){ return canEdit() }
+function canEditEtc(){ return canEdit() }
+function siteName(id){ return (SITES.find(s=>s.id===id)||{}).name || id }
 
 /* ════════════════════════════════════════════════════════════
    7. 렌더
@@ -1122,16 +784,10 @@ function guard(fn,label){
         <span style="opacity:.7;display:block">${esc(e.message)}</span></div>`; }
   }
 }
-function resetLocal(){
-  if(!confirm('이 브라우저에 저장된 입력자료와 로그를 모두 지우고 새로 시작할까요?')) return;
-  try{ localStorage.removeItem(K.db); localStorage.removeItem(K.log); localStorage.removeItem(K.ses); }catch(e){}
-  location.reload();
-}
 
 function renderTop(){
-  const w=LIVE.week||[], t=LIVE.at?`${pad(LIVE.at.getHours())}:${pad(LIVE.at.getMinutes())} 기준`:'';
-  document.getElementById('natTime').textContent=t+(CFG.mode!=='live'?' · 데모':'');
-  document.getElementById('siteTime').textContent=t;
+  const t=LIVE.at?`${LIVE.at.getFullYear()}.${pad(LIVE.at.getMonth()+1)}.${pad(LIVE.at.getDate())} ${LIVE.at.getHours()}시 기준`:'';
+  document.getElementById('sumTitle').textContent='폭염현황'+(t?`  (${t})`:'');
 
   // 실시간 조회 실패 안내
   const nb=document.getElementById('netBar');
@@ -1140,463 +796,236 @@ function renderTop(){
     nb.innerHTML = NETFAIL==='cors'
       ? `<b>실시간 기상 자료를 받지 못해 데모 데이터를 표시하고 있습니다.</b>
          파일을 직접 열면 브라우저가 공공데이터포털 호출을 <u>CORS 정책</u>으로 막습니다.
-         배포된 주소로 접속하면 실시간 값이 들어옵니다. (표 작성·입력·출력은 그대로 됩니다)`
+         배포된 주소로 접속하면 실시간 값이 들어옵니다.`
       : NETFAIL==='proxy'
       ? `<b>중계함수(/api/kma)에 연결하지 못했습니다.</b> 데모 데이터를 표시합니다.
          <span style="opacity:.7">(${esc(NETFAIL_MSG)})</span>`
       : NETFAIL==='key'
-      ? `<b>인증키가 거부되었습니다.</b> 공공데이터포털에서 3개 서비스(단기예보·중기예보·기상특보)
-         활용신청이 모두 승인되었는지 확인하세요. <span style="opacity:.7">(${esc(NETFAIL_MSG)})</span>`
+      ? `<b>인증키가 거부되었습니다.</b> 공공데이터포털 활용신청 승인 여부를 확인하세요.
+         <span style="opacity:.7">(${esc(NETFAIL_MSG)})</span>`
       : `<b>기상 자료를 받지 못했습니다.</b> 데모 데이터를 표시합니다.
          <span style="opacity:.7">(${esc(NETFAIL_MSG)})</span>`;
   }else nb.style.display='none';
 
-  // ── 특이사항 요약 ──────────────────────────────────────
+  // ── 폭염현황 요약 ──────────────────────────────────────
   const byLv={}; ALERT_LV.forEach(l=>byLv[l]=[]);
-  SITES.forEach(s=>{ const a=LIVE.sites[s.id]?.alert||'없음'; (byLv[a]=byLv[a]||[]).push(s.name) });
-  const hot=SITES.map(s=>({n:s.name,f:LIVE.sites[s.id]?.feels??-99})).sort((a,b)=>b.f-a.f)[0];
+  SITES.forEach(s=>{ const a2=LIVE.sites[s.id]?.alert||'없음'; (byLv[a2]=byLv[a2]||[]).push(s.name) });
+  const hot=SITES.map(s=>({n:s.name,f:LIVE.sites[s.id]?.feels??-99})).sort((x,y)=>y.f-x.f)[0];
   const onCnt=SITES.length-byLv['없음'].length;
   const line=(lv,color)=>byLv[lv].length
-    ? `<div><b style="color:${color}">폭염${lv}</b> ${byLv[lv].length}개소 &nbsp;<span class="nm">${byLv[lv].join(', ')}</span></div>` : '';
+    ? `<div><b style="color:${color}">폭염${lv}</b> <em>${byLv[lv].length}개소</em>
+       <span class="nm">${byLv[lv].join(', ')}</span></div>` : '';
   let html='';
-  html+=line('중대경보','#8e1d14')+line('경보','#C00000')+line('주의보','#b7791f');
+  html+=line('중대경보','#7d1710')+line('경보','#c62828')+line('주의보','#b7791f');
   if(!onCnt) html+=`<div><b style="color:#1f9254">폭염특보 발효 없음</b> <span class="nm">전 거점 이상 없음</span></div>`;
-  html+=`<div>최고 체감온도 <b style="color:#C00000">${hot.f>-99?hot.f.toFixed(1)+'℃':'—'}</b> <span class="nm">${hot.n}</span></div>`;
+  html+=`<div>최고 체감온도 <b style="color:#c62828"><em>${hot.f>-99?hot.f.toFixed(1)+'℃':'—'}</em></b> <span class="nm">${hot.n}</span></div>`;
   if(LIVE.pending&&LIVE.pending.length)
     html+='<div>발효 예정 '+LIVE.pending.map(p=>{
-      const t=String(p.at);
-      return `<span class="nm">${p.name}</span> ${p.from}→<b>${p.to}</b> (${+t.slice(4,6)}/${+t.slice(6,8)} ${t.slice(8,10)}:${t.slice(10,12)})`;
+      const x=String(p.at);
+      return `<span class="nm">${p.name}</span> ${p.from}→<b>${p.to}</b> (${+x.slice(4,6)}/${+x.slice(6,8)} ${x.slice(8,10)}:${x.slice(10,12)})`;
     }).join(' · ')+'</div>';
   document.getElementById('natSummary').innerHTML=html;
 
-  // ── 거점별 현재 기상 (폭염특보 단계별 음영) ──────────────
-  document.getElementById('siteStrip').innerHTML=SITES.map(s=>{
-    const d=LIVE.sites[s.id];
-    const lv=d?d.alert:'없음';
-    return `<div class="st ${ALERT_CLS[lv]||'a0'}" title="${esc(s.addr)}">
-      <div class="n">${s.name}</div>
-      <div class="i">${d?skyIcon(d.sky,d.pty):'—'}</div>
-      <div class="t">${d?d.ta+'℃':'—'}</div>
-      <div class="f">체감 <b>${d?d.feels.toFixed(1)+'℃':'—'}</b></div>
-      <div class="al">${lv==='없음'?'특보 없음':lv}</div></div>`}).join('');
-
-  // ── 거점별 주간예보 (공통좌표 묶음 + 이름 아래 특보현황) ──
-  const box=document.getElementById('weekSites');
-  if(box){
-    const ref=(LIVE.weekBySite&&LIVE.weekBySite[WEEK_ROWS[0].ids[0]])||LIVE.week||[];
-    document.getElementById('weekHead').innerHTML='<div class="wname"></div>'+ref.map((d,i)=>{
-      const dt=d.date, dw=dt.getDay();
-      return `<div class="wcell ${dw===6?'sat':dw===0?'sun':''}">${i===0?'오늘':(dt.getMonth()+1)+'.'+dt.getDate()}<br><span>(${DOW[dw]})</span></div>`;
-    }).join('');
-    box.innerHTML=WEEK_ROWS.map(row=>{
-      const wk=(LIVE.weekBySite&&LIVE.weekBySite[row.ids[0]])||[];
-      // 묶인 거점 중 가장 높은 등급을 대표로 표시
-      const lv=row.ids.map(id=>LIVE.sites[id]?.alert||'없음')
-                      .reduce((a,b)=>ALERT_LV.indexOf(b)>ALERT_LV.indexOf(a)?b:a,'없음');
-      const nameCell=`<div class="wname"><span class="wn">${row.label}</span>
-        <span class="wal ${ALERT_CLS[lv]}">${lv==='없음'?'특보 없음':'폭염'+lv}</span></div>`;
-      if(!wk.length) return `<div class="wrow">${nameCell}<div class="wcell" style="flex:4;color:#aab2c0">예보 없음</div></div>`;
-      return `<div class="wrow">${nameCell}`+wk.map(d=>
-        `<div class="wcell ${d.near?'':'mid'}">
-           <div class="i">${skyIcon(d.sky,d.pty)}</div>
-           <div class="t"><span class="mn">${d.mn??'-'}</span>/<span class="mx">${d.mx??'-'}</span></div>
-           <div class="p">${d.pop??0}%</div></div>`).join('')+`</div>`;
-    }).join('');
-  }
+  guard(renderBoard,'거점 현황');
 }
 
-function renderTable(){
+/* 거점별 기상 카드 + 입력칸 — 계열 / 컨테이너 그룹으로 묶어 표시 */
+function renderBoard(){
   const d=day(VIEW);
-  const dt=new Date(VIEW+'T00:00:00');
-  const head=headText(VIEW, d.baseAt);
-  const cols=SITES.map(()=>'<col class="c-s">').join('');
-  const cell=(v)=>v==null||v===''?'':v;
+  const ed=canEdit();
 
-  let h=`<table class="rep" id="repTbl"><colgroup><col class="c-b">${cols}</colgroup><tbody>`;
-  h+=`<tr class="r-h"><td class="hd" rowspan="2">구분</td><td class="hd dt" colspan="${SITES.length}">${head}</td></tr>`;
-  h+=`<tr class="r-h">${SITES.map(s=>`<td class="hd">${s.name}</td>`).join('')}</tr>`;
-  h+=`<tr class="r-b"><td>기상현황</td>${SITES.map(s=>{const w=d.wx[s.id];
-      return `<td>${w?skyText(w.sky,w.pty):''}</td>`}).join('')}</tr>`;
-  h+=`<tr class="r-b"><td>체감온도</td>${SITES.map(s=>{const w=d.wx[s.id];
-      return `<td>${w?w.feels.toFixed(1):''}</td>`}).join('')}</tr>`;
-  h+=`<tr class="r-b"><td class="alert">폭염특보</td>${SITES.map(s=>{const w=d.wx[s.id];
-      return `<td class="alert">${w?w.alert:''}</td>`}).join('')}</tr>`;
-  ROWS.forEach(r=>{
-    h+=`<tr class="r-b"><td>${r.label}</td>${SITES.map(s=>{
-      const v=d.notes[s.id]?.[r.k]||'';
-      const ed=canEditNote(s.id);
-      return `<td class="note ${ed?'edit':'locked'}" ${ed?`onclick="openM('${s.id}','${r.k}')"`:''}
-        title="${ed?'클릭하여 입력':(VIEW!==today()?'과거 자료는 관리자만 수정 가능':'소속 거점만 입력 가능')}">${esc(cell(v))}</td>`
-    }).join('')}</tr>`;
-  });
-  const ee=canEditEtc();
-  h+=`<tr><td style="height:64px">기타사항</td>
-      <td class="etc ${ee?'edit':'locked'}" colspan="${SITES.length}"
-        ${ee?`onclick="openM('HQ','etc')"`:''}
-        title="${ee?'클릭하여 입력':'국내사업부장·관리자만 입력 가능'}">${esc(d.etc.text||'')}</td></tr>`;
-  h+=`</tbody></table>`;
-  document.getElementById('tblBox').innerHTML=h;
+  const card=(s)=>{
+    const w=LIVE.sites[s.id];
+    const lv=w?w.alert:'없음';
+    const n=d.notes[s.id]||{};
+    const cell=(k)=>{
+      const v=n[k]||'';
+      return `<div class="in ${ed?'edit':''}" data-site="${s.id}" data-key="${k}"
+        ${ed?`onclick="beginEdit('${s.id}','${k}',this)"`:''}
+        title="${ed?'클릭하여 입력':'사용자 코드를 넣으면 입력할 수 있습니다'}">
+        <div class="in-lb">${ROW_LB[k]}</div>
+        <div class="in-tx ${v?'':'empty'}">${v?esc(v):(ed?'입력':'—')}</div></div>`;
+    };
+    return `<div class="st ${ALERT_CLS[lv]||'a0'}" title="${esc(s.addr||'')}">
+      <div class="st-hd">
+        <div class="n">${s.name}</div>
+        <div class="i">${w?skyIcon(w.sky,w.pty):'—'}</div>
+        <div class="t">${w?w.ta+'℃':'—'}</div>
+        <div class="f">체감 <b>${w?w.feels.toFixed(1)+'℃':'—'}</b></div>
+        <div class="al">${lv==='없음'?'특보 없음':'폭염'+lv}</div>
+      </div>
+      ${cell('worker')}${cell('facility')}${cell('transport')}
+    </div>`;
+  };
 
-  // 하단 안내
-  const scope = isAll() ? '전체 칸 (관리자 권한)'
-              : SES.role==='hq' ? '기타사항'
-              : siteName(SES.site)+' 열 (근로자/제품/운송)';
-  document.getElementById('tip').innerHTML =
-    `기준시각 <b>${esc(d.baseAt||'—')}</b> · 편집 권한: <b>${scope}</b>`
-    + (VIEW!==today() ? (isAll()? ' · <b style="color:#b7791f">지난 자료 수정 가능</b>'
-                                : ' · <b style="color:#C00000">지난 자료 조회 모드 (수정 불가)</b>') : '');
+  document.getElementById('siteStrip').innerHTML = GROUPS.map(g=>{
+    const list=g.ids.map(id=>SITES.find(s=>s.id===id)).filter(Boolean);
+    if(!list.length) return '';
+    const on=list.filter(s=>(LIVE.sites[s.id]?.alert||'없음')!=='없음').length;
+    return `<div class="grp">
+      <div class="grp-hd"><span class="grp-nm">${g.label}</span>
+        <span class="grp-ct">${list.length}개소</span>
+        ${on?`<span class="grp-al">특보 ${on}개소</span>`:''}</div>
+      <div class="grp-body">${list.map(card).join('')}</div>
+    </div>`;
+  }).join('');
+
+  const eb=document.getElementById('etcBox');
+  eb.className='etc-box'+(ed?' edit':'');
+  eb.setAttribute('data-key','etc');
+  eb.onclick = ed ? function(){ beginEdit('HQ','etc',this) } : null;
+  eb.title = ed?'클릭하여 입력':'사용자 코드를 넣으면 입력할 수 있습니다';
+  eb.innerHTML = d.etc.text ? esc(d.etc.text) : `<span class="empty">${ed?'클릭하여 입력':'—'}</span>`;
+
+  document.getElementById('btnFix').style.display = ed?'':'none';
+  document.getElementById('tip').innerHTML = ed
+    ? `<b>입력 가능</b> — 칸을 클릭해 바로 입력하세요. 기준시각 <b>${esc(d.baseAt||'—')}</b>`
+    : `조회 전용 — 상단에 사용자 코드를 넣으면 입력할 수 있습니다. 기준시각 <b>${esc(d.baseAt||'—')}</b>`;
 }
-
-function renderDates(){
-  const ks=Object.keys(DB).sort().reverse();
-  if(!ks.includes(today())) ks.unshift(today());
-  document.getElementById('dateSel').innerHTML=ks.map(k=>{
-    const d=new Date(k+'T00:00:00');
-    return `<option value="${k}" ${k===VIEW?'selected':''}>${d.getMonth()+1}월 ${d.getDate()}일 (${DOW[d.getDay()]})${k===today()?' · 오늘':''}</option>`}).join('');
-}
-async function loadDate(k){ VIEW=k; guard(renderTable,'표');
-  await pullDay(k); guard(renderTable,'표'); renderDbTag(); }
-function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 
 /* ════════════════════════════════════════════════════════════
-   8. 입력 모달
+   8. 인라인 입력 — 칸을 누르면 그 자리에서 바로 고친다
    ════════════════════════════════════════════════════════════ */
-let M={site:null,key:null};
-function openM(site,key){
-  if(key==='etc'? !canEditEtc() : !canEditNote(site)) return;
-  M={site,key};
+const ROW_LB={worker:'근로자', facility:'제품(시설)', transport:'운송', etc:'기타사항'};
+let EDITING=null;                                  // '거점id:항목'
+
+function beginEdit(siteId, key, el){
+  if(!canEdit()) return;
+  const tag=siteId+':'+key;
+  if(EDITING===tag) return;
+  EDITING=tag;
   const d=day(VIEW);
-  const label = key==='etc'?'기타사항':ROWS.find(r=>r.k===key).label;
-  document.getElementById('mTtl').textContent =
-    (key==='etc'?'기타사항':siteName(site)+' — '+label);
-  const cur = key==='etc'? d.etc.text : (d.notes[site]?.[key]||'');
-  document.getElementById('mTx').value=cur;
-  const meta = key==='etc'? d.etc : d.notes[site];
-  document.getElementById('mQ').textContent = meta?.by? `최종 입력 : ${meta.by} · ${meta.at}` : '최초 입력';
-  document.getElementById('mbg').classList.add('on');
-  setTimeout(()=>document.getElementById('mTx').focus(),50);
+  const cur = key==='etc' ? (d.etc.text||'') : (d.notes[siteId]?.[key]||'');
+  const multi = key==='etc';
+  el.classList.add('editing');
+  el.innerHTML = (key==='etc' ? '' : `<div class="in-lb">${ROW_LB[key]}</div>`)
+    + `<textarea class="in-ed${multi?' tall':''}" spellcheck="false"></textarea>`
+    + `<div class="in-tip">Enter 저장 · Shift+Enter 줄바꿈 · Esc 취소</div>`;
+  const ta=el.querySelector('textarea');
+  ta.value=cur;
+  ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+  let done=false;
+  const finish=(save)=>{
+    if(done) return; done=true; EDITING=null;
+    if(save) commitEdit(siteId,key,ta.value);
+    else guard(renderBoard,'거점 현황');
+  };
+  ta.onblur=()=>finish(true);
+  ta.onkeydown=(e)=>{
+    if(e.key==='Escape'){ e.preventDefault(); finish(false) }
+    else if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); finish(true) }
+  };
 }
-function qk(t){ document.getElementById('mTx').value=t }
-function closeM(){ document.getElementById('mbg').classList.remove('on') }
-function saveM(){
-  const v=document.getElementById('mTx').value.trim();
+function commitEdit(siteId, key, raw){
+  const v=String(raw).trim();
   const d=day(VIEW), stamp=nowStamp();
-  if(M.key==='etc'){
-    addLog('입력',SES.name,SES.role==='hq'?'국내사업부장':SES.name,'기타사항',d.etc.text,v);
-    d.etc={text:v,by:SES.name,at:stamp};
+  if(key==='etc'){
+    if(v===(d.etc.text||'')){ guard(renderBoard,'거점 현황'); return }
+    addLog('입력',WHO,'기타사항','기타사항',d.etc.text,v);
+    d.etc={text:v, by:WHO, at:stamp};
     pushEtc(VIEW, d.etc).then(renderDbTag);
   }else{
-    const n=d.notes[M.site];
-    addLog('입력',SES.name,siteName(M.site),ROWS.find(r=>r.k===M.key).label,n[M.key],v);
-    n[M.key]=v; n.by=SES.name; n.at=stamp;
-    pushNote(VIEW, M.site, {[M.key]:v, by:SES.name, at:stamp}).then(renderDbTag);
+    const n=d.notes[siteId];
+    if(v===(n[key]||'')){ guard(renderBoard,'거점 현황'); return }
+    addLog('입력',WHO,siteName(siteId),ROW_LB[key],n[key],v);
+    n[key]=v; n.by=WHO; n.at=stamp;
+    pushNote(VIEW, siteId, {[key]:v, by:WHO, at:stamp}).then(renderDbTag);
   }
-  save(); closeM(); guard(renderTable,'표');
+  save();
+  guard(renderBoard,'거점 현황');
 }
+
+/* ════════════════════════════════════════════════════════════
+   8-4. 폭염현황 확정 (시점별 누적 저장)
+   ════════════════════════════════════════════════════════════ */
+let HIST=[];
+
+async function confirmBoard(){
+  if(!canEdit()){ alert('사용자 코드를 먼저 입력하세요.'); return }
+  const d=day(VIEW);
+  const empty=SITES.filter(s=>{
+    const n=d.notes[s.id]||{};
+    return !n.worker && !n.facility && !n.transport;
+  });
+  let msg=`${VIEW} 폭염현황을 확정 저장할까요?\n확정본은 지워지지 않고 이력에 쌓입니다.`;
+  if(empty.length) msg=`아직 입력되지 않은 거점이 ${empty.length}개소 있습니다.\n(${empty.map(s=>s.name).join(', ')})\n\n`+msg;
+  if(!confirm(msg)) return;
+
+  const btn=document.getElementById('btnFix'); btn.disabled=true;
+  const now=new Date();
+  const rec={
+    savedAt: `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`,
+    savedBy: WHO,
+    date: VIEW,
+    baseAt: d.baseAt||'',
+    sites: SITES.map(s=>{
+      const w=LIVE.sites[s.id]||{}, n=d.notes[s.id]||{};
+      return { name:s.name, sky:w.sky??null, pty:w.pty??0,
+               ta:(w.ta??null), feels:(w.feels??null), alert:(w.alert||'없음'),
+               worker:n.worker||'', facility:n.facility||'', transport:n.transport||'' };
+    }),
+    etc: d.etc.text||''
+  };
+  try{
+    await fbPush('/confirmed', rec);
+    addLog('확정',WHO,'폭염현황',VIEW,'',rec.savedAt);
+    save();
+    document.getElementById('fixTime').textContent='최근 확정 '+rec.savedAt+' · '+rec.savedBy;
+    flash('btnFix','✓ 확정 저장됨',2200);
+    await loadHist();
+  }catch(e){ alert(e.status===401 ? permHelp() : '확정 저장 실패: '+e.message) }
+  finally{ btn.disabled=false; renderDbTag() }
+}
+
+async function loadHist(){
+  try{
+    const o=await fbGet('/confirmed'); DBOK=true;
+    HIST=Object.entries(o||{}).map(([id,v])=>({id,...v}))
+          .sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
+  }catch(e){ if(e.status!==401) DBOK=false; HIST=[] }
+  renderHist(); renderDbTag();
+  const last=HIST[0];
+  if(last) document.getElementById('fixTime').textContent='최근 확정 '+last.savedAt+' · '+(last.savedBy||'');
+}
+function renderHist(){
+  document.getElementById('histCnt').textContent = HIST.length?`${HIST.length}건`:'';
+  const box=document.getElementById('histList');
+  if(!HIST.length){ box.innerHTML='<div class="hist-none">확정된 기록이 없습니다.</div>'; return }
+  box.innerHTML='<table><thead><tr><th style="width:23%">확정 시점</th><th style="width:15%">확정자</th>'
+    +'<th style="width:14%">대상 일자</th><th>폭염특보 요약</th><th style="width:9%"></th></tr></thead><tbody>'
+    + HIST.slice(0,60).map(h=>{
+        const on=(h.sites||[]).filter(x=>x.alert&&x.alert!=='없음');
+        const sum = on.length ? on.map(x=>`${x.name} ${x.alert}`).join(', ') : '발효 없음';
+        return `<tr><td><b>${esc(h.savedAt||'')}</b></td><td>${esc(h.savedBy||'')}</td>
+          <td>${esc(h.date||'')}</td><td class="sm">${esc(sum)}</td>
+          <td style="text-align:right"><button onclick="viewHist('${h.id}')">보기</button></td></tr>`;
+      }).join('') + '</tbody></table>';
+}
+function viewHist(id){
+  const h=HIST.find(x=>x.id===id); if(!h) return;
+  const rows=(h.sites||[]).map(s=>
+    `${s.name}\n  기상 ${skyText(s.sky,s.pty)} / ${s.ta??'-'}℃ / 체감 ${s.feels??'-'}℃ / 폭염${s.alert}\n`
+   +`  근로자 : ${s.worker||'—'}\n  제품(시설) : ${s.facility||'—'}\n  운송 : ${s.transport||'—'}`).join('\n\n');
+  alert(`■ ${h.date} 폭염현황 (확정 ${h.savedAt} · ${h.savedBy})\n기준시각 ${h.baseAt||'-'}\n\n${rows}\n\n[기타사항]\n${h.etc||'—'}`);
+}
+
+/* 저장자료가 손상됐을 때 초기화 (오류 안내에서 호출) */
+function resetLocal(){
+  if(!confirm('이 브라우저에 저장된 자료를 지우고 새로 불러올까요?\n공용 저장소의 내용은 지워지지 않습니다.')) return;
+  try{ localStorage.removeItem(K.db); localStorage.removeItem(K.log) }catch(e){}
+  location.reload();
+}
+
+/* ── 공통 유틸 ────────────────────────────────────────────── */
+function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 function nowStamp(){const d=new Date();
   return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`}
 
-/* ════════════════════════════════════════════════════════════
-   8-3. 관리 페이지 (최고관리자 전용)
-   ════════════════════════════════════════════════════════════ */
-async function toggleUsr(){                       // 상단바 [관리 페이지] 버튼
-  if(!isRoot()){ alert('관리 페이지는 최고관리자만 접근할 수 있습니다.'); return }
-  document.getElementById('app').style.display='none';
-  document.getElementById('logView').style.display='none';
-  document.getElementById('adminPage').style.display='block';
-  document.getElementById('admWho').textContent=SES.name+' · 최고관리자';
-  document.getElementById('uSite').innerHTML=
-    LOGIN_LIST.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-  admTab('users');
-  resetUserForm();
-  await pullUsers();
-  // 거점 정의가 아직 비어 있으면 내장 기본값(10개소)을 한 번에 올린다.
-  // 이걸 안 하면 한 건만 수정했을 때 그 한 건만 남아 표 열이 사라진다.
-  try{
-    const cur=await fbGet('/sites');
-    if(!cur || !Object.keys(cur).length) await seedSites();
-    await pullSites();
-  }catch(e){ /* 401 등은 아래 안내로 처리 */ }
-  resetSiteForm();
-  renderUsers(); renderSites(); renderDbTag();
-  if(DBPERM.length) alert(permHelp());
-}
-function closeAdminPage(){
-  document.getElementById('adminPage').style.display='none';
-  document.getElementById('app').style.display='block';
-}
-function admTab(name){
-  ['users','sites'].forEach(t=>{
-    document.getElementById('tab-'+t).style.display = t===name?'block':'none';
-    document.querySelector(`.tab[data-tab="${t}"]`).classList.toggle('on', t===name);
-  });
-}
-
-/* ── 거점 마스터 관리 ─────────────────────────────────────── */
-let SEDIT=null;
-const SITE_FIELDS=['name','addr','lat','lon','nx','ny','area','stn'];
-function siteRecord(s){
-  return {name:s.name, addr:s.addr||'', lat:s.lat??null, lon:s.lon??null,
-          nx:s.nx, ny:s.ny, area:(s.area||[])[0]||'', stn:s.stn};
-}
-/* 공용 저장소에 저장된 거점 정의를 내려받아 SITES 를 갈아끼운다 */
-async function pullSites(){
-  try{
-    const o=await fbGet('/sites'); DBOK=true;
-    const rows=Object.entries(o||{});
-    // 저장된 정의가 내장 기본값보다 눈에 띄게 적으면 아직 시딩이 안 된 상태로 보고 무시한다
-    if(rows.length < 2) return false;
-    const built=rows.map(([id,v])=>{
-      const base=SITES.find(x=>x.id===id)||{};
-      return {...base, id,
-        name:v.name, addr:v.addr||'', lat:v.lat, lon:v.lon, nx:+v.nx, ny:+v.ny,
-        stn:+v.stn, area:[v.area||v.name], wide:base.wide||[v.area||v.name],
-        regLand:base.regLand||'11C20000', regTa:base.regTa||'11C20401',
-        order:(v.order??999)};
-    }).sort((a,b)=>a.order-b.order);
-    SITES.length=0; built.forEach(x=>SITES.push(x));
-    rebuildDerived();
-    S.s('heatSITES',SITES);
-    return true;
-  }catch(e){ if(e.status!==401) DBOK=false; return false }
-}
-/* 거점 목록이 바뀌면 파생 목록도 다시 만든다 */
-function rebuildDerived(){
-  LOGIN_LIST.length=0;
-  LOGIN_LIST.push(HQ, ...SITES.slice().sort((a,b)=>a.name.localeCompare(b.name,'ko')));
-  WX_SITES.length=0; WX_SITES.push(HQ_SITE, ...SITES);
-  WEEK_ROWS.length=0;
-  WEEK_ROWS.push({label:HQ_SITE.name, ids:[HQ_SITE.id]});
-  const used=new Set();
-  SITES.forEach(s=>{
-    if(used.has(s.id)) return;
-    const same=SITES.filter(x=>x.nx===s.nx&&x.ny===s.ny&&x.addr===s.addr);
-    same.forEach(x=>used.add(x.id));
-    WEEK_ROWS.push({label:same.map(x=>x.name).join(' / '), ids:same.map(x=>x.id)});
-  });
-}
-async function saveSiteRec(id, rec, order){
-  const body={...rec, order};
-  if(id) await fbSend(`/sites/${id}`, body, 'PUT');
-  else await fbPush('/sites', body);
-}
-/* 최초 1회 : 내장 기본값을 공용 저장소에 올린다 */
-async function seedSites(){
-  for(let i=0;i<SITES.length;i++) await saveSiteRec(SITES[i].id, siteRecord(SITES[i]), i);
-}
-function renderSites(){
-  document.getElementById('siteCnt').textContent=`등록 ${SITES.length}개소`;
-  document.getElementById('siteList').innerHTML =
-   `<table><thead><tr><th>거점명</th><th>주소</th><th>위도, 경도</th><th>격자</th>
-      <th>특보 시·군</th><th>관서</th><th></th></tr></thead><tbody>`
-   + SITES.map(s=>`<tr class="${SEDIT===s.id?'editing':''}">
-      <td><b>${esc(s.name)}</b></td><td>${esc(s.addr||'—')}</td>
-      <td class="g">${s.lat?.toFixed?s.lat.toFixed(5):'—'}, ${s.lon?.toFixed?s.lon.toFixed(5):'—'}</td>
-      <td class="g">${s.nx}, ${s.ny}</td>
-      <td>${esc((s.area||[])[0]||'—')}</td><td class="g">${s.stn}</td>
-      <td class="act" style="text-align:right;white-space:nowrap">
-        <button onclick="editSite('${s.id}')">수정</button>
-        <button class="del" onclick="removeSite('${s.id}')">삭제</button></td></tr>`).join('')
-   + `</tbody></table>`;
-}
-function resetSiteForm(){
-  SEDIT=null;
-  ['sName','sAddr','sLat','sLon','sNx','sNy','sArea'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('sStn').value='133';
-  document.getElementById('sBtn').textContent='+ 추가';
-  document.getElementById('sCancel').style.display='none';
-  document.getElementById('geoResult').innerHTML='';
-  renderSites();
-}
-function editSite(id){
-  const s=SITES.find(x=>x.id===id); if(!s) return;
-  SEDIT=id;
-  document.getElementById('sName').value=s.name;
-  document.getElementById('sAddr').value=s.addr||'';
-  document.getElementById('sLat').value=s.lat??'';
-  document.getElementById('sLon').value=s.lon??'';
-  document.getElementById('sNx').value=s.nx;
-  document.getElementById('sNy').value=s.ny;
-  document.getElementById('sArea').value=(s.area||[])[0]||'';
-  document.getElementById('sStn').value=String(s.stn);
-  document.getElementById('sBtn').textContent='저장';
-  document.getElementById('sCancel').style.display='';
-  renderSites();
-}
-/* 주소 → 위경도 + 기상청 격자 (배포된 /api/geo 중계함수 사용) */
-async function geocodeSite(){
-  const q=document.getElementById('sAddr').value.trim();
-  const out=document.getElementById('geoResult');
-  if(!q){ out.textContent='주소를 먼저 입력하세요.'; return }
-  const btn=document.getElementById('sGeo'); btn.disabled=true; btn.textContent='찾는 중…';
-  out.textContent='조회 중…';
-  try{
-    const r=await fetch('/api/geo?q='+encodeURIComponent(q));
-    const j=await r.json();
-    const rs=(j.results||[]);
-    if(!rs.length){ out.innerHTML='주소를 찾지 못했습니다. 읍·면·동까지만 넣어 다시 시도해 보세요.<br>'
-      +'<span style="color:#6b7688">예) 충남 서천군 장항읍</span>'; return }
-    applyGeo(rs[0]);
-    out.innerHTML='<b>적용됨</b> '+esc(rs[0].name)
-      + (rs.length>1 ? '<br><span style="color:#6b7688">다른 후보:</span>'
-          + rs.slice(1).map((x,i)=>`<button class="pick" onclick='applyGeoIdx(${i+1})'>${esc(x.name)} → ${x.nx},${x.ny}</button>`).join('') : '');
-    window.__geo=rs;
-  }catch(e){ out.textContent='좌표 조회 실패: '+e.message+' (배포된 주소에서만 동작합니다)' }
-  finally{ btn.disabled=false; btn.textContent='주소로 좌표 찾기' }
-}
-function applyGeo(g){
-  document.getElementById('sLat').value=g.lat.toFixed(5);
-  document.getElementById('sLon').value=g.lon.toFixed(5);
-  document.getElementById('sNx').value=g.nx;
-  document.getElementById('sNy').value=g.ny;
-}
-function applyGeoIdx(i){ const g=(window.__geo||[])[i]; if(g) applyGeo(g) }
-
-async function submitSite(){
-  const v=id=>document.getElementById(id).value.trim();
-  const rec={name:v('sName'), addr:v('sAddr'), lat:parseFloat(v('sLat')), lon:parseFloat(v('sLon')),
-             nx:parseInt(v('sNx')), ny:parseInt(v('sNy')), area:v('sArea')||v('sName'), stn:+v('sStn')};
-  if(!rec.name){ alert('거점명을 입력하세요.'); return }
-  if(isNaN(rec.nx)||isNaN(rec.ny)){ alert('격자(nx, ny)가 필요합니다.\n주소를 넣고 [주소로 좌표 찾기]를 눌러주세요.'); return }
-  if(isNaN(rec.lat)) rec.lat=null;
-  if(isNaN(rec.lon)) rec.lon=null;
-  const btn=document.getElementById('sBtn'); btn.disabled=true;
-  try{
-    if(!SEDIT && !confirm(`거점 "${rec.name}" 을 추가하면 폭염 현황표에 열이 하나 늘어납니다.\n계속할까요?`)){ return }
-    const idx=SEDIT? SITES.findIndex(x=>x.id===SEDIT) : SITES.length;
-    await saveSiteRec(SEDIT, rec, idx);
-    addLog(SEDIT?'거점수정':'거점추가',SES.name,'거점 관리',rec.name,'',`${rec.addr} / ${rec.nx},${rec.ny}`);
-    await pullSites(); save(); resetSiteForm();
-  }catch(e){ alert(e.status===401 ? permHelp() : '저장 실패: '+e.message) }
-  finally{ btn.disabled=false; renderDbTag() }
-}
-async function removeSite(id){
-  const s=SITES.find(x=>x.id===id); if(!s) return;
-  if(!confirm(`거점 "${s.name}" 을 삭제할까요?\n폭염 현황표에서 열이 사라지고, 기존 입력 내용은 표시되지 않습니다.`)) return;
-  try{
-    const r=await fetch(`${FB}/sites/${id}.json`,{method:'DELETE'});
-    if(!r.ok) throw dbErr(r.status,'/sites');
-    addLog('거점삭제',SES.name,'거점 관리',s.name,s.addr||'','');
-    await pullSites(); save(); resetSiteForm();
-  }catch(e){ alert(e.status===401 ? permHelp() : '삭제 실패: '+e.message) }
-  renderDbTag();
-}
-
-/* ── 사용자 관리 ─────────────────────────────────────────── */
-let UEDIT=null;
-function resetUserForm(){
-  UEDIT=null;
-  document.getElementById('uName').value='';
-  document.getElementById('uLevel').value='user';
-  document.getElementById('uBtn').textContent='+ 추가';
-  document.getElementById('uCancel').style.display='none';
-  renderUsers();
-}
-function renderUsers(){
-  document.getElementById('usrCnt').textContent=`등록 ${USERS.length}명`;
-  const order=id=>{const i=LOGIN_LIST.findIndex(s=>s.id===id); return i<0?99:i};
-  const list=USERS.slice().sort((a,b)=>order(a.site)-order(b.site)||a.name.localeCompare(b.name,'ko'));
-  document.getElementById('usrList').innerHTML = list.length
-   ? `<table><thead><tr><th style="width:24%">소속</th><th style="width:26%">이름</th>
-      <th style="width:22%">권한</th><th style="width:28%"></th></tr></thead><tbody>`
-     + list.map(u=>`<tr class="${UEDIT===u.id?'editing':''}">
-        <td>${esc(siteLabel(u.site))}</td><td><b>${esc(u.name)}</b></td>
-        <td><span class="lv ${u.level}">${u.level==='manager'?'관리자':'일반사용자'}</span></td>
-        <td class="act" style="text-align:right">
-          <button onclick="editUser('${u.id}')">수정</button>
-          <button class="del" onclick="removeUser('${u.id}')">삭제</button></td></tr>`).join('')
-     + `</tbody></table>`
-   : `<div style="padding:22px;text-align:center;color:var(--mut)">등록된 사용자가 없습니다.<br>
-      위에서 소속·이름·권한을 지정해 추가하세요.</div>`;
-}
-function siteLabel(id){ return (LOGIN_LIST.find(s=>s.id===id)||{}).name || id }
-
-async function submitUser(){
-  const site=document.getElementById('uSite').value;
-  const name=document.getElementById('uName').value.trim();
-  const level=document.getElementById('uLevel').value;
-  if(!name){ alert('이름을 입력하세요.'); return }
-  const dup=USERS.find(u=>u.site===site&&u.name===name&&u.id!==UEDIT);
-  if(dup){ alert('같은 소속에 같은 이름이 이미 있습니다.'); return }
-  const btn=document.getElementById('uBtn'); btn.disabled=true;
-  try{
-    if(UEDIT){
-      const before=USERS.find(u=>u.id===UEDIT);
-      await saveUser({id:UEDIT, site, name, level});
-      addLog('사용자수정',SES.name,'사용자 관리',`${siteLabel(site)} ${name}`,
-             before?`${siteLabel(before.site)} ${before.name} / ${before.level}`:'', `${level}`);
-    }else{
-      await saveUser({site, name, level});
-      addLog('사용자추가',SES.name,'사용자 관리',`${siteLabel(site)} ${name}`,'',level);
-    }
-    save(); resetUserForm();
-  }catch(e){ alert(e.status===401 ? permHelp() : '저장 실패: '+e.message) }
-  finally{ btn.disabled=false; renderDbTag() }
-}
-function editUser(id){
-  const u=USERS.find(x=>x.id===id); if(!u) return;
-  UEDIT=id;
-  document.getElementById('uSite').value=u.site;
-  document.getElementById('uName').value=u.name;
-  document.getElementById('uLevel').value=u.level;
-  document.getElementById('uBtn').textContent='저장';
-  document.getElementById('uCancel').style.display='';
-  renderUsers();
-  document.getElementById('uName').focus();
-}
-async function removeUser(id){
-  const u=USERS.find(x=>x.id===id); if(!u) return;
-  if(!confirm(`${siteLabel(u.site)} ${u.name} 님을 삭제할까요?\n삭제 후에는 로그인할 수 없습니다.`)) return;
-  try{
-    await deleteUser(id);
-    addLog('사용자삭제',SES.name,'사용자 관리',`${siteLabel(u.site)} ${u.name}`,u.level,'');
-    save(); resetUserForm();
-  }catch(e){ alert(e.status===401 ? permHelp() : '삭제 실패: '+e.message) }
-  renderDbTag();
-}
-
-/* ════════════════════════════════════════════════════════════
-   9. 로그
-   ════════════════════════════════════════════════════════════ */
+/* ── 변경 이력은 공용 저장소에만 남긴다 (화면 표시 없음) ── */
 function addLog(action,user,site,target,before,after){
   const e={ts:new Date().toISOString(),date:VIEW||today(),action,user,site,target,
            before:before||'',after:after||''};
-  LOG.push(e);
-  if(LOG.length>5000) LOG=LOG.slice(-5000);
-  pushLog(e);                                  // 공용 저장소에도 기록
-}
-async function toggleLog(){
-  if(!canViewLog()){ alert('로그는 관리자만 조회할 수 있습니다.'); return }
-  const el=document.getElementById('logView');
-  const on = el.style.display!=='block';
-  el.style.display = on?'block':'none';
-  if(!on) return;
-  renderLog();
-  try{                                     // 전 거점 로그를 공용 저장소에서 합쳐 보여줌
-    const o=await fbGet('/logs'); DBOK=true;
-    const remote=Object.values(o||{});
-    const seen=new Set(LOG.map(l=>l.ts+l.user+l.target));
-    remote.forEach(l=>{ if(l&&l.ts&&!seen.has(l.ts+l.user+l.target)){ LOG.push(l); seen.add(l.ts+l.user+l.target) } });
-    LOG.sort((a,b)=>a.ts<b.ts?-1:1);
-    save(); renderLog(); renderDbTag();
-  }catch(e){ DBOK=false; renderDbTag() }
-}
-function renderLog(){
-  const rows=LOG.slice().reverse().slice(0,300).map(l=>{
-    const t=new Date(l.ts);
-    return `<tr><td>${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())} ${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}</td>
-      <td>${esc(l.user)}</td><td>${esc(l.site)}</td><td>${esc(l.action)}</td><td>${esc(l.target)}</td>
-      <td class="o">${esc(l.before)}</td><td>${esc(l.after)}</td></tr>`}).join('');
-  document.getElementById('logBody').innerHTML=
-    `<table><thead><tr><th>일시</th><th>사용자</th><th>소속</th><th>구분</th><th>항목</th><th>이전값</th><th>변경값</th></tr></thead>
-     <tbody>${rows||'<tr><td colspan="7" style="padding:20px;text-align:center;color:#6b7688">기록 없음</td></tr>'}</tbody></table>`;
-}
-function downloadLog(){
-  if(!canViewLog()){ alert('로그는 관리자만 다운로드할 수 있습니다.'); return }
-  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
-  const csv='﻿'+['일시','대상일자','사용자','소속','구분','항목','이전값','변경값'].join(',')+'\n'+
-    LOG.map(l=>[new Date(l.ts).toLocaleString('ko-KR'),l.date,l.user,l.site,l.action,l.target,l.before,l.after].map(q).join(',')).join('\n');
-  dl(new Blob([csv],{type:'text/csv;charset=utf-8'}),`폭염현황_입력로그_${ymd(new Date())}.csv`);
+  pushLog(e);
 }
 function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
@@ -1604,8 +1033,8 @@ function dl(blob,name){const a=document.createElement('a');a.href=URL.createObje
 /* ════════════════════════════════════════════════════════════
    10. 캡쳐 / 엑셀
    ════════════════════════════════════════════════════════════ */
-function shot(){                       // 표 영역 → canvas
-  return html2canvas(document.getElementById('sheet'),{scale:2,backgroundColor:'#ffffff'});
+function shot(){                       // 거점 현황 블록 → canvas
+  return html2canvas(document.getElementById('board'),{scale:2,backgroundColor:'#ffffff'});
 }
 function flash(id,txt,ms){             // 버튼 피드백
   const b=document.getElementById(id), o=b.textContent;
@@ -1613,12 +1042,6 @@ function flash(id,txt,ms){             // 버튼 피드백
   setTimeout(()=>{b.textContent=o;b.classList.remove('done');b.disabled=false},ms||1600);
 }
 
-/* 사진 다운로드 (PNG 파일) */
-function capture(){
-  shot().then(cv=>{
-    cv.toBlob(b=>{ dl(b,`국내사업부_폭염현황_${VIEW.replace(/-/g,'')}.png`); flash('btnShot','✓ 저장됨') });
-  }).catch(e=>alert('사진 저장 실패: '+e.message));
-}
 
 /* 복사 — 클립보드에 이미지로 담아 메일·메신저·한글·워드에 바로 붙여넣기 */
 async function copyImg(){
@@ -1653,132 +1076,6 @@ async function copyImg(){
   }
 }
 
-/* ─── XLSX 생성 (원본 서식 재현) ─── */
-const X=(s)=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-function colLetter(n){let s='';while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=(n-m-1)/26}return s}
-
-function buildSheetXml(){
-  const d=day(VIEW);
-  const dt=new Date(VIEW+'T00:00:00');
-  const head=headText(VIEW, d.baseAt);
-  const N=SITES.length, last=colLetter(2+N);       // B(2) ~ L(12)
-  const rows=[];
-  const cellS=(ref,st,v,num)=>v===''||v==null
-    ? `<c r="${ref}" s="${st}"/>`
-    : (num? `<c r="${ref}" s="${st}"><v>${v}</v></c>`
-          : `<c r="${ref}" s="${st}" t="inlineStr"><is><t xml:space="preserve">${X(v)}</t></is></c>`);
-
-  // 3행 제목
-  rows.push(`<row r="3" ht="21" customHeight="1">${cellS('B3',1,'■ 국내사업부 주요거점 폭염 현황')}</row>`);
-  rows.push(`<row r="4" ht="6.6" customHeight="1"/>`);
-  // 5행 구분 + 날짜
-  let r5=cellS('B5',2,'구분')+cellS('C5',3,head);
-  for(let i=1;i<N;i++) r5+=`<c r="${colLetter(3+i)}5" s="3"/>`;
-  rows.push(`<row r="5" ht="26.4" customHeight="1">${r5}</row>`);
-  // 6행 거점명
-  let r6=`<c r="B6" s="2"/>`+SITES.map((s,i)=>cellS(colLetter(3+i)+'6',2,s.name)).join('');
-  rows.push(`<row r="6" ht="26.4" customHeight="1">${r6}</row>`);
-  // 7 기상현황 / 8 체감온도 / 9 폭염특보
-  const line=(r,label,st,fn,numeric,cellSt)=>{
-    let x=cellS('B'+r, st===6?6:4, label);
-    SITES.forEach((s,i)=>{ x+=cellS(colLetter(3+i)+r, cellSt??st, fn(s), numeric) });
-    rows.push(`<row r="${r}" ht="35.4" customHeight="1">${x}</row>`);
-  };
-  line(7,'기상현황',4,s=>{const w=d.wx[s.id];return w?skyText(w.sky,w.pty):''});
-  line(8,'체감온도',4,s=>{const w=d.wx[s.id];return w?(Math.round(w.feels*10)/10):''},true,9);
-  line(9,'폭염특보',6,s=>{const w=d.wx[s.id];return w?w.alert:''});
-  ROWS.forEach((rr,idx)=>line(10+idx,rr.label,5,s=>d.notes[s.id]?.[rr.k]||''));
-  // 13 기타사항
-  let r13=cellS('B13',4,'기타사항')+cellS('C13',7,d.etc.text||'');
-  for(let i=1;i<N;i++) r13+=`<c r="${colLetter(3+i)}13" s="7"/>`;
-  rows.push(`<row r="13" ht="51" customHeight="1">${r13}</row>`);
-  rows.push(`<row r="14" ht="18">${cellS('B14',8,'※ 폭염특보 : 없음 / 주의보 / 경보 / 중대경보')}</row>`);
-
-  const cols=`<cols><col min="1" max="1" width="4.8" customWidth="1"/>
-    <col min="2" max="2" width="12.3" customWidth="1"/>
-    <col min="3" max="${2+N}" width="14.3" customWidth="1"/></cols>`;
-  const merges=`<mergeCells count="3">
-    <mergeCell ref="B5:B6"/><mergeCell ref="C5:${last}5"/><mergeCell ref="C13:${last}13"/></mergeCells>`;
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-<sheetViews><sheetView workbookViewId="0" showGridLines="0"/></sheetViews>
-<sheetFormatPr defaultRowHeight="16.5"/>${cols}
-<sheetData>${rows.join('')}</sheetData>${merges}
-<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/>
-<pageSetup orientation="landscape" paperSize="9" fitToWidth="1" fitToHeight="1"/>
-</worksheet>`;
-}
-
-const STYLES_XML=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-<numFmts count="1"><numFmt numFmtId="176" formatCode="0.0"/></numFmts>
-<fonts count="8">
-<font><sz val="11"/><name val="맑은 고딕"/></font>
-<font><b/><sz val="14"/><name val="맑은 고딕"/></font>
-<font><b/><sz val="12"/><name val="맑은 고딕"/></font>
-<font><b/><sz val="14"/><name val="맑은 고딕"/></font>
-<font><sz val="12"/><name val="맑은 고딕"/></font>
-<font><sz val="11"/><name val="맑은 고딕"/></font>
-<font><b/><sz val="12"/><color rgb="FFC00000"/><name val="맑은 고딕"/></font>
-<font><sz val="10"/><name val="맑은 고딕"/></font>
-</fonts>
-<fills count="3"><fill><patternFill patternType="none"/></fill>
-<fill><patternFill patternType="gray125"/></fill>
-<fill><patternFill patternType="solid"><fgColor rgb="FFFFFFCC"/><bgColor indexed="64"/></patternFill></fill></fills>
-<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>
-<border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right>
-<top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom><diagonal/></border>
-</borders>
-<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
-<cellXfs count="10">
-<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
-<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="center"/></xf>
-<xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
-<xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
-<xf numFmtId="0" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
-<xf numFmtId="0" fontId="5" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
-<xf numFmtId="0" fontId="6" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
-<xf numFmtId="0" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>
-<xf numFmtId="0" fontId="7" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
-<xf numFmtId="176" fontId="4" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
-</cellXfs>
-<cellStyles count="1"><cellStyle name="표준" xfId="0" builtinId="0"/></cellStyles>
-</styleSheet>`;
-
-async function toXlsx(){
-  if(typeof JSZip==='undefined'){alert('엑셀 모듈을 불러오지 못했습니다. 인터넷 연결을 확인하세요.');return}
-  const dt=new Date(VIEW+'T00:00:00');
-  const sname=`${dt.getMonth()+1}.${dt.getDate()}`;
-  const zip=new JSZip();
-  zip.file('[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-<Default Extension="xml" ContentType="application/xml"/>
-<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
-<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
-<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
-</Types>`);
-  zip.folder('_rels').file('.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
-</Relationships>`);
-  const xl=zip.folder('xl');
-  xl.file('workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
- xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<sheets><sheet name="${X(sname)}" sheetId="1" r:id="rId1"/></sheets></workbook>`);
-  xl.folder('_rels').file('workbook.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
-<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
-</Relationships>`);
-  xl.file('styles.xml',STYLES_XML);
-  xl.folder('worksheets').file('sheet1.xml',buildSheetXml());
-  const blob=await zip.generateAsync({type:'blob',
-    mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  dl(blob,`2026년_폭염기간_일일 거점현황_국내사업부_${VIEW.replace(/-/g,'')}.xlsx`);
-}
-
 /* ════════════════════════════════════════════════════════════
    11. 구동
    ════════════════════════════════════════════════════════════ */
@@ -1801,8 +1098,8 @@ async function refreshNow(silent){
     await ensureToday();
     const r=await collect();
     stampToday();                           // 기상값 + 기준시각 갱신 후 공유
-    guard(renderTop,'상단'); guard(renderDates,'날짜목록');
-    if(VIEW) guard(renderTable,'표');
+    guard(renderTop,'상단'); 
+    if(VIEW) guard(renderBoard,'거점 현황');
     renderDbTag();
     const el=document.getElementById('refTime');
     if(el) el.textContent='최근 갱신 '+stampNow().split(' ')[1];
@@ -1835,62 +1132,54 @@ async function rollover(){
 }
 
 async function start(){
-  document.getElementById('login').style.display='none';
+  // 화면은 무조건 먼저 띄운다 — 이후 단계에서 오류가 나도 빈 화면이 되지 않게
   document.getElementById('topbar').style.display='flex';
   document.getElementById('app').style.display='block';
-  document.getElementById('meTag').textContent=
-    isAll() ? `${SES.name} · 전체 권한`
-    : SES.role==='hq' ? `국내사업부장 · ${SES.name}`
-    : `${siteName(SES.site)} · ${SES.name}`;
-  document.getElementById('btnLog').style.display = canViewLog()?'':'none';
-  document.getElementById('btnUsr').style.display = isRoot()?'':'none';
   VIEW=today(); LASTDAY=VIEW;
-  await pullDates();                      // 공용 저장소의 일자 목록
-  await pullDay(VIEW);                    // 다른 거점이 이미 입력한 내용 받아오기
-  guard(renderDates,'날짜목록'); guard(renderTable,'표');
-  await refreshNow();                     // 로그인 직후 자동 갱신 (버튼에 경과시간 표시)
+  try{ if(sessionStorage.getItem('heatUnlock')==='1'){ UNLOCKED=true; WHO='관리자';
+        document.getElementById('codeIn').style.display='none';
+        document.getElementById('codeBtn').style.display='none';
+        document.getElementById('codeOff').style.display='';
+        document.getElementById('codeState').textContent='입력 가능';
+        document.getElementById('codeState').className='code-lb on'; } }catch(e){}
 
-  // 자정 감시 (30초 주기) — 날짜가 바뀌면 전날 마감 + 새 표 준비
+  await pullDates();
+  await pullDay(VIEW);
+  guard(renderBoard,'거점 현황');
+  await refreshNow();
+  await loadHist();
+
+  // 자정 감시 — 날짜가 바뀌면 전날 마감 후 새 표 준비
   setInterval(async()=>{
     if(await rollover()){
       await collect(); stampToday();
-      guard(renderTop,'상단'); guard(renderDates,'날짜목록'); guard(renderTable,'표');
+      guard(renderTop,'상단');
     }
   },30000);
-  setInterval(syncTick,20000);            // 20초마다 다른 거점 입력 반영
-  setInterval(()=>refreshNow(true),600000); // 10분마다 조용히 기상 갱신
+  setInterval(syncTick,20000);
+  setInterval(()=>refreshNow(true),600000);
 }
 
 (function init(){
-  DB=S.g(K.db,{}); LOG=S.g(K.log,[]); SES=S.g(K.ses,null);
+  DB=S.g(K.db,{});
   if(!DB||typeof DB!=='object') DB={};
-  if(!Array.isArray(LOG)) LOG=[];
-  Object.keys(DB).forEach(k=>{                       // 이전 버전 자료 정리
+  Object.keys(DB).forEach(k=>{
     if(!/^\d{4}-\d{2}-\d{2}$/.test(k)) delete DB[k]; else normalizeDay(DB[k],k);
   });
-  document.getElementById('lgSite').innerHTML=
-    LOGIN_LIST.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-  showAdm(false);
-  document.getElementById('mbg').addEventListener('click',e=>{if(e.target.id==='mbg')closeM()});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
-
-  USERS=S.g(K.usr,[]);                       // 마지막 명부로 먼저 화면 열고
-  const cached=S.g('heatSITES',null);        // 마지막 거점 정의
-  if(Array.isArray(cached)&&cached.length){ SITES.length=0; cached.forEach(x=>SITES.push(x)); rebuildDerived() }
-  (async()=>{
-    await pullSites();                       // 공용 저장소의 거점 정의
-    await pullUsers();                       // 공용 저장소에서 최신 명부 갱신
-    if(SES){
-      // 저장된 세션도 명부와 대조 — 삭제·변경된 사용자는 재로그인
-      if(SES.role!=='admin' && SES.role!=='super' && !findUser(SES.site,SES.name)){
-        SES=null; try{localStorage.removeItem(K.ses)}catch(e){}
-      }
-    }
-    if(SES) start();
-    else if(!USERS.length)
-      document.getElementById('lgErr').innerHTML=
-        '등록된 사용자가 없습니다.<br>최고관리자 접속 후 사용자를 등록하세요.';
-  })();
+  // 어떤 이유로 start() 가 중단되더라도 화면은 보이게 한다
+  try{
+    document.getElementById('topbar').style.display='flex';
+    document.getElementById('app').style.display='block';
+  }catch(e){}
+  try{ start() }
+  catch(e){
+    console.error('시작 오류',e);
+    const nb=document.getElementById('netBar');
+    if(nb){ nb.style.display='flex';
+      nb.innerHTML='<div><b>화면을 준비하는 중 문제가 생겼습니다.</b> '+esc(e.message)+
+        ' <button onclick="resetLocal()" style="margin-left:6px;padding:4px 11px;background:#b7791f;'+
+        'color:#fff;border:none;border-radius:5px;font-weight:700;cursor:pointer">저장자료 초기화</button></div>'; }
+  }
 })();
 </script>
 </body>
