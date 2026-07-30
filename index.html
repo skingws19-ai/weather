@@ -50,6 +50,21 @@ select{cursor:pointer}
 
 .wrap{max-width:1300px;margin:0 auto;padding:14px 18px 50px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:12px}
+/* 새로고침 바 */
+.refbar{display:flex;align-items:center;gap:11px;margin-bottom:12px;flex-wrap:wrap}
+.refbar .sp{flex:1}
+#btnRef{background:#d32f2f;color:#fff;font-weight:700;font-size:14px;padding:11px 34px;
+  min-width:260px;border-radius:7px;letter-spacing:-.2px;
+  box-shadow:0 2px 7px rgba(211,47,47,.32)}
+#btnRef:hover{background:#b71c1c}
+#btnRef:disabled{background:#c98b8b;cursor:default;box-shadow:none}
+#btnRef.loading::before{content:'';display:inline-block;width:11px;height:11px;margin-right:7px;
+  border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;
+  vertical-align:-1px;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.refbar .ref-t{font-size:12.5px;color:var(--navy);font-weight:700}
+.refbar .ref-hint{font-size:11.5px;color:var(--mut)}
+body.busy .panel,body.busy #sheet{opacity:.55;pointer-events:none;transition:opacity .15s}
 #netBar{background:#fdf5e3;border:1px solid #e6cf9b;border-left:4px solid #b7791f;
   border-radius:7px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;color:#6d4c11;
   line-height:1.7;gap:9px;align-items:flex-start}
@@ -62,23 +77,11 @@ select{cursor:pointer}
 .p-hd button{padding:4px 10px;font-size:11.5px;background:#eef2f7;color:var(--navy);font-weight:700}
 .p-hd button:hover{background:#dde5f0}
 
-/* 전국 현황 + 주간예보 */
-.strip{display:flex;gap:0;flex-wrap:wrap}
-.nat{flex:0 0 300px;padding:10px 13px;border-right:1px solid var(--line)}
-.nat .big{font-size:12.5px;line-height:1.7}
+.nat{padding:9px 14px}
+.nat .big{font-size:12.5px;line-height:1.85}
 .nat .big b{color:var(--navy)}
-.cities{display:flex;gap:14px;margin-top:7px;font-size:12px}
-.cities div{text-align:center}
-.cities .c-n{font-size:11px;color:var(--mut)}
-.cities .c-t{font-weight:700;font-size:14px}
-.week{flex:1;display:flex;min-width:420px}
-.wd{flex:1;text-align:center;padding:8px 3px;border-right:1px dashed var(--line);font-size:11.5px}
-.wd:last-child{border-right:none}
-.wd .d{color:var(--mut);font-size:11px}
-.wd .i{font-size:19px;line-height:1.3}
-.wd .t{font-weight:600}
-.wd .t .mx{color:#c0392b} .wd .t .mn{color:#2563a8}
-.wd .p{color:#2563a8;font-size:10.5px}
+.nat .big .nm{font-size:11.5px;color:var(--mut)}
+.nat .big > div{padding:1px 0}
 .wd.sat .d{color:#2563a8} .wd.sun .d{color:#c0392b}
 
 /* 거점 현재 기상 스트립 */
@@ -90,8 +93,44 @@ select{cursor:pointer}
 .st .t{font-size:15px;font-weight:700}
 .st .f{font-size:11px;color:var(--mut)}
 .st .f b{color:#c0392b;font-size:12px}
-.st.hot{background:#fdecea}
-.st.warn{background:#fdf5e3}
+/* 폭염특보 단계별 음영 */
+.st.a0{background:#fff}
+.st.a1{background:#fff6d9}                     /* 주의보  — 연노랑 */
+.st.a2{background:#ffddc2}                     /* 경보    — 주황   */
+.st.a3{background:#f8c4bd}                     /* 중대경보 — 적색   */
+.st .al{font-size:10.5px;font-weight:700;margin-top:3px;color:#6b7688}
+.st.a1 .al{color:#8a6100} .st.a2 .al{color:#a1470a} .st.a3 .al{color:#a4231a}
+/* 범례 */
+.legend{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mut);font-weight:400}
+.legend b{font-weight:700;color:var(--navy);margin-right:2px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;
+  border:1px solid rgba(0,0,0,.16);margin-left:6px}
+.legend i.a0{background:#fff} .legend i.a1{background:#fff6d9}
+.legend i.a2{background:#ffddc2} .legend i.a3{background:#f8c4bd}
+/* 거점별 주간예보 표 */
+.wtable{padding:4px 6px 8px;overflow-x:auto}
+.wrow{display:flex;align-items:stretch;min-width:470px;border-bottom:1px solid #f0f2f6}
+.wrow:last-child{border-bottom:none}
+.whead{border-bottom:1px solid var(--line);font-size:11px;color:var(--mut);text-align:center;
+  padding:5px 0;font-weight:700}
+.whead .wcell span{font-weight:400;font-size:10px}
+.whead .wcell.sat{color:#2563a8} .whead .wcell.sun{color:#c0392b}
+.wname{flex:0 0 128px;display:flex;flex-direction:column;justify-content:center;
+  padding:5px 8px 5px 10px;gap:3px}
+.wname .wn{font-size:12px;font-weight:700;color:var(--navy);line-height:1.25}
+.wname .wal{font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;
+  align-self:flex-start;border:1px solid rgba(0,0,0,.1);color:#6b7688}
+.wname .wal.a0{background:#f2f4f8}
+.wname .wal.a1{background:#fff6d9;color:#8a6100}
+.wname .wal.a2{background:#ffddc2;color:#a1470a}
+.wname .wal.a3{background:#f8c4bd;color:#a4231a}
+.wcell{flex:1;text-align:center;padding:5px 2px;border-left:1px dashed #eef1f5;font-size:11px}
+.wcell.mid{background:#fafbfd}
+.wcell .i{font-size:15px;line-height:1.2}
+.wcell .t{font-weight:600;font-size:11.5px}
+.wcell .t .mn{color:#2563a8} .wcell .t .mx{color:#c0392b}
+.wcell .p{color:#2563a8;font-size:10px}
+/* 발효 예정 특보 */
 
 /* ═══════════ 표 (원본 서식) ═══════════ */
 #sheet{background:#fff;padding:16px 20px 12px;border:1px solid var(--line);border-radius:8px;overflow-x:auto}
@@ -143,6 +182,71 @@ table.rep td.locked{background:#fff}
 .mdl .f .sv{background:var(--navy);color:#fff;font-weight:700;padding:9px 20px}
 .mdl .f .cc{background:#eef1f5;padding:9px 18px}
 
+/* 관리 페이지 */
+.adm-top{display:flex;align-items:center;gap:14px;margin:4px 0 14px}
+.adm-top h2{font-size:17px;color:var(--navy)}
+.adm-top .sp{flex:1}
+.adm-top .back{background:#fff;border:1px solid var(--line);color:var(--txt);font-weight:600;padding:8px 15px}
+.adm-top .back:hover{background:#eef2f7}
+.adm-top .adm-who{font-size:12px;color:var(--mut)}
+.tabs{display:flex;gap:4px;margin-bottom:-1px}
+.tab{background:#e7ecf3;color:var(--mut);font-weight:700;padding:9px 22px;
+  border-radius:8px 8px 0 0;font-size:13px}
+.tab.on{background:#fff;color:var(--navy);border:1px solid var(--line);border-bottom-color:#fff}
+.tabpane{border-radius:0 8px 8px 8px}
+
+/* 거점 관리 폼 */
+.site-form{display:flex;flex-wrap:wrap;gap:9px 11px;align-items:flex-end}
+.site-form .fl{display:flex;flex-direction:column;gap:4px}
+.site-form label{font-size:11px;font-weight:700;color:var(--mut)}
+.site-form input,.site-form select{width:auto;min-width:112px}
+.site-form .gw{flex:1;min-width:290px}
+.site-form .gw .addr-row{display:flex;gap:6px}
+.site-form .gw input{flex:1;min-width:180px}
+.site-form .sm input{width:106px} .site-form .xs input{width:62px}
+.site-form .geo{background:#eef2fb;color:#1d4e83;font-weight:700;white-space:nowrap;padding:7px 13px}
+.site-form .geo:hover{background:#dde7f7}
+.site-form .btns{flex-direction:row;gap:6px}
+.site-form .add{background:var(--navy);color:#fff;font-weight:700;padding:8px 17px}
+.site-form .add:hover{background:#2f5597}
+.site-form .cc{background:#eef1f5;color:var(--txt);padding:8px 15px}
+#geoResult:empty{display:none}
+#geoResult{margin-top:10px;padding:9px 12px;border-radius:7px;font-size:12px;line-height:1.7;
+  background:#f7f9fc;border:1px solid var(--line)}
+#geoResult .pick{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);
+  margin-top:5px;padding:6px 10px;font-size:11.5px;cursor:pointer;border-radius:5px}
+#geoResult .pick:hover{background:#eef2fb;border-color:#9dbbe4}
+#siteList table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+#siteList th{background:#f2f5f9;padding:7px 8px;text-align:left;border-bottom:1px solid var(--line);
+  font-size:11px;color:var(--mut);white-space:nowrap}
+#siteList td{padding:6px 8px;border-bottom:1px solid #eef1f5;vertical-align:middle}
+#siteList tr.editing td{background:#fffdf2}
+#siteList .g{font-family:monospace;font-size:11.5px;color:#4a5768}
+#siteList .act button{padding:4px 9px;font-size:11px;background:#eef1f5;color:var(--txt);margin-left:3px}
+#siteList .act button.del{background:#fdecea;color:var(--red)}
+
+/* 사용자 관리 */
+.usr-body{padding:13px 15px}
+.usr-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.usr-form select{width:auto;min-width:132px}
+.usr-form input{width:auto;min-width:150px}
+.usr-form button{padding:8px 17px;font-weight:700}
+.usr-form .add{background:var(--navy);color:#fff}
+.usr-form .add:hover{background:#2f5597}
+.usr-form .cc{background:#eef1f5;color:var(--txt)}
+.usr-hint{font-size:11.5px;color:var(--mut);line-height:1.7;margin:9px 0 11px}
+#usrList table{width:100%;border-collapse:collapse;font-size:12.5px}
+#usrList th{background:#f2f5f9;padding:7px 9px;text-align:left;border-bottom:1px solid var(--line);
+  font-size:11.5px;color:var(--mut)}
+#usrList td{padding:6px 9px;border-bottom:1px solid #eef1f5}
+#usrList tr.editing td{background:#fffdf2}
+#usrList .lv{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+#usrList .lv.user{background:#eef2f7;color:#4a5768}
+#usrList .lv.manager{background:#e4edfb;color:#1d4e83}
+#usrList .act button{padding:4px 10px;font-size:11.5px;background:#eef1f5;color:var(--txt);margin-left:4px}
+#usrList .act button.del{background:#fdecea;color:var(--red)}
+#usrList .act button:hover{filter:brightness(.95)}
+
 /* 로그 */
 #logView{display:none;max-height:320px;overflow:auto}
 #logView table{width:100%;border-collapse:collapse;font-size:11.5px}
@@ -193,6 +297,7 @@ table.rep td.locked{background:#fff}
   <span class="me" id="meTag"></span>
   <span id="dbTag" style="font-size:11.5px"></span>
   <span class="sp"></span>
+  <button onclick="toggleUsr()" id="btnUsr">⚙ 관리 페이지</button>
   <button onclick="toggleLog()" id="btnLog">📋 로그</button>
   <button onclick="logout()">로그아웃</button>
   <span class="crTop">©2026 김원상 All rights reserved.</span>
@@ -200,30 +305,45 @@ table.rep td.locked{background:#fff}
 
 <div class="wrap" id="app" style="display:none">
 
+  <!-- 새로고침 (전체 공통) -->
+  <div class="refbar">
+    <button id="btnRef" onclick="refreshNow()">↻ 새로고침</button>
+    <span class="ref-t" id="refTime"></span>
+    <span class="sp"></span>
+    <span class="ref-hint">기상현황 · 체감온도 · 폭염특보와 표의 기준시각을 현재 시점으로 갱신합니다</span>
+  </div>
+
   <div id="netBar" style="display:none"></div>
 
-  <!-- 전국 현황 + 주간예보 -->
+  <!-- 특이사항 요약 -->
   <div class="panel">
-    <div class="p-hd">
-      <span>전국 날씨현황 · 주간예보</span>
-      <span class="t" id="natTime"></span>
-      <span class="sp"></span>
-      <button onclick="refreshNow()">↻ 새로고침</button>
-    </div>
-    <div class="strip">
-      <div class="nat">
-        <div class="big" id="natSummary">—</div>
-        <div class="cities" id="natCities"></div>
-      </div>
-      <div class="week" id="week"></div>
+    <div class="p-hd"><span>특이사항</span><span class="t" id="natTime"></span></div>
+    <div class="nat"><div class="big" id="natSummary">—</div></div>
+  </div>
+
+  <!-- 거점별 주간예보 -->
+  <div class="panel">
+    <div class="p-hd"><span>거점별 주간예보</span>
+      <span class="t">최저/최고(℃) · 강수확률 &nbsp;|&nbsp; 3일차까지 거점 격자, 이후 광역 예보</span></div>
+    <div class="wtable">
+      <div class="wrow whead" id="weekHead"></div>
+      <div id="weekSites"></div>
     </div>
   </div>
+
 
   <!-- 거점 현재 기상 -->
   <div class="panel">
     <div class="p-hd"><span>거점별 현재 기상 · 체감온도</span>
-      <span class="t" id="siteTime"></span><span class="sp"></span>
-      <button onclick="refreshNow()">↻ 새로고침</button></div>
+      <span class="t" id="siteTime"></span>
+      <span class="sp"></span>
+      <span class="legend">
+        <b>폭염특보</b>
+        <i class="a0"></i>없음
+        <i class="a1"></i>주의보
+        <i class="a2"></i>경보
+        <i class="a3"></i>중대경보
+      </span></div>
     <div class="sites" id="siteStrip"></div>
   </div>
 
@@ -244,13 +364,94 @@ table.rep td.locked{background:#fff}
 
   <div class="bar">
     <select id="dateSel" onchange="loadDate(this.value)"></select>
-    <button onclick="lock14()" id="btn14">🕑 14시 기준 갱신</button>
     <span class="sp"></span>
     <button class="act" id="btnCopy" onclick="copyImg()">📋 복사</button>
     <button class="act" id="btnShot" onclick="capture()">📷 사진 다운로드</button>
     <button class="act pri" onclick="toXlsx()">⬇ 엑셀 다운로드</button>
   </div>
   <div class="tip" id="tip"></div>
+</div>
+
+<!-- ══════ 관리 페이지 (최고관리자 전용) ══════ -->
+<div class="wrap" id="adminPage" style="display:none">
+  <div class="adm-top">
+    <button class="back" onclick="closeAdminPage()">← 현황판으로</button>
+    <h2>관리 페이지</h2>
+    <span class="sp"></span>
+    <span class="adm-who" id="admWho"></span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="users" onclick="admTab('users')">사용자 관리</button>
+    <button class="tab" data-tab="sites" onclick="admTab('sites')">거점 · 주소 관리</button>
+  </div>
+
+  <!-- 사용자 관리 -->
+  <div class="panel tabpane" id="tab-users">
+    <div class="p-hd"><span>사용자 목록</span><span class="t" id="usrCnt"></span></div>
+    <div class="usr-body">
+      <div class="usr-form">
+        <select id="uSite"></select>
+        <input id="uName" placeholder="이름" onkeydown="if(event.key==='Enter')submitUser()">
+        <select id="uLevel">
+          <option value="user">일반사용자</option>
+          <option value="manager">관리자</option>
+        </select>
+        <button class="add" id="uBtn" onclick="submitUser()">+ 추가</button>
+        <button class="cc" id="uCancel" style="display:none" onclick="resetUserForm()">취소</button>
+      </div>
+      <div class="usr-hint">
+        일반사용자 = 자기 거점 칸만 입력 · 관리자 = 표 전체 입력(로그·관리 페이지 접근 불가)<br>
+        소속을 <b>국내사업부장</b>으로 등록하면 표 하단 기타사항만 입력할 수 있습니다.
+        최고관리자는 접속코드로만 들어옵니다.
+      </div>
+      <div id="usrList"></div>
+    </div>
+  </div>
+
+  <!-- 거점 관리 -->
+  <div class="panel tabpane" id="tab-sites" style="display:none">
+    <div class="p-hd"><span>거점 목록</span><span class="t" id="siteCnt"></span></div>
+    <div class="usr-body">
+      <div class="site-form">
+        <div class="fl"><label>거점명</label><input id="sName" placeholder="예: 군산"></div>
+        <div class="fl gw"><label>주소</label>
+          <div class="addr-row">
+            <input id="sAddr" placeholder="예: 전북 군산시 서해로 194">
+            <button class="geo" id="sGeo" onclick="geocodeSite()">주소로 좌표 찾기</button>
+          </div>
+        </div>
+        <div class="fl sm"><label>위도</label><input id="sLat" placeholder="35.97328"></div>
+        <div class="fl sm"><label>경도</label><input id="sLon" placeholder="126.57321"></div>
+        <div class="fl xs"><label>nx</label><input id="sNx" placeholder="53"></div>
+        <div class="fl xs"><label>ny</label><input id="sNy" placeholder="92"></div>
+        <div class="fl sm"><label>특보 시·군명</label><input id="sArea" placeholder="군산"></div>
+        <div class="fl sm"><label>발표관서</label>
+          <select id="sStn">
+            <option value="109">서울·경기 (109)</option>
+            <option value="133">대전·충남 (133)</option>
+            <option value="146">전북 (146)</option>
+            <option value="156">광주·전남 (156)</option>
+            <option value="143">대구·경북 (143)</option>
+            <option value="159">부산·경남 (159)</option>
+            <option value="105">강원 (105)</option>
+            <option value="131">충북 (131)</option>
+            <option value="184">제주 (184)</option>
+          </select></div>
+        <div class="fl btns">
+          <button class="add" id="sBtn" onclick="submitSite()">+ 추가</button>
+          <button class="cc" id="sCancel" style="display:none" onclick="resetSiteForm()">취소</button>
+        </div>
+      </div>
+      <div id="geoResult"></div>
+      <div class="usr-hint">
+        주소를 입력하고 <b>주소로 좌표 찾기</b>를 누르면 위도·경도와 기상청 격자(nx, ny)가 자동으로 채워집니다.<br>
+        <b>특보 시·군명</b>은 기상청 특보 통보문에 쓰이는 이름입니다 (예: 장항 → <code>서천</code>, 부산신항 → <code>부산</code>).<br>
+        <b style="color:var(--red)">거점을 추가·삭제하면 폭염 현황표의 열 구성이 바뀝니다.</b> 신중히 변경하세요.
+      </div>
+      <div id="siteList"></div>
+    </div>
+  </div>
 </div>
 
 <!-- 편집 모달 -->
@@ -281,25 +482,66 @@ table.rep td.locked{background:#fff}
 //  stn    : 기상특보 발표관서 코드 (109 서울·경기 / 133 대전·충남 / 146 전북 / 159 부산·경남)
 //  area   : 특보 통보문에 쓰이는 시·군명 (폭염특보 자동 매칭용)
 //  wide   : 시·군이 안 잡힐 때 쓰는 광역 키워드
-//  nx,ny : 기상청 격자좌표 / stn : 특보 발표관서 / area : 특보문 시·군명 / wide : 광역명
+//  addr  : 사업장 주소 (격자좌표 산출 근거)
+//  nx,ny : 기상청 동네예보 격자좌표 — 위 주소를 지오코딩해 LCC 변환한 값
+//  stn   : 기상특보 발표관서 / area : 특보문 시·군명 / wide : 광역명
 const SITES=[
- {id:'gunsan',   name:'군산',     nx:56,ny:92, stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도']},
- {id:'janghang', name:'장항',     nx:55,ny:94, stn:133, area:['서천'], wide:['충남','충청남도']},
- {id:'daejeon',  name:'대전',     nx:67,ny:100,stn:133, area:['대전'], wide:['대전']},
- {id:'cheonan',  name:'천안',     nx:63,ny:110,stn:133, area:['천안'], wide:['충남','충청남도']},
- {id:'sintanjin',name:'신탄진',   nx:68,ny:100,stn:133, area:['대전'], wide:['대전']},
- {id:'busanNP',  name:'부산신항', nx:96,ny:74, stn:159, area:['부산'], wide:['부산']},
- {id:'stjCY',    name:'신탄진 CY',nx:68,ny:100,stn:133, area:['대전'], wide:['대전']},
- {id:'gsCY',     name:'군산 CY',  nx:56,ny:92, stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도']},
- {id:'asanCY',   name:'아산 CY',  nx:60,ny:110,stn:133, area:['아산'], wide:['충남','충청남도']},
- {id:'uiwang',   name:'의왕',     nx:61,ny:121,stn:109, area:['의왕'], wide:['경기','경기도']}
+ {id:'gunsan',   name:'군산',     addr:'전북 군산시 서해로 194',
+  lat:35.97328, lon:126.57321, nx:53, ny:92,  stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도'],
+  regLand:'11F10000', regTa:'11F10501'},                                    // 전북 / 군산
+ {id:'janghang', name:'장항',     addr:'충남 서천군 장항읍 장산로 149',
+  lat:36.02402, lon:126.69157, nx:55, ny:93,  stn:133, area:['서천'], wide:['충남','충청남도'],
+  regLand:'11C20000', regTa:'11C20201'},                                    // 대전·충남 / 보령
+ {id:'daejeon',  name:'대전',     addr:'대전 대덕구 신일서로68번길 50',
+  lat:36.43711, lon:127.40188, nx:68, ny:102, stn:133, area:['대전'], wide:['대전'],
+  regLand:'11C20000', regTa:'11C20401'},                                    // 대전·충남 / 대전
+ {id:'cheonan',  name:'천안',     addr:'충남 천안시 동남구 광덕면 세종로 4186',
+  lat:36.69864, lon:127.11124, nx:62, ny:108, stn:133, area:['천안'], wide:['충남','충청남도'],
+  regLand:'11C20000', regTa:'11C20101'},                                    // 대전·충남 / 천안
+ {id:'sintanjin',name:'신탄진',   addr:'대전 대덕구 신일서로126번길 60',
+  lat:36.43275, lon:127.40818, nx:68, ny:102, stn:133, area:['대전'], wide:['대전'],
+  regLand:'11C20000', regTa:'11C20401'},
+ {id:'busanNP',  name:'부산신항', addr:'부산 강서구 명지국제2로 16',
+  lat:35.09222, lon:128.90858, nx:95, ny:74,  stn:159, area:['부산'], wide:['부산'],
+  regLand:'11H20000', regTa:'11H20201'},                                    // 부산·경남 / 부산
+ {id:'stjCY',    name:'신탄진 CY',addr:'대전 대덕구 신일서로126번길 60',
+  lat:36.43275, lon:127.40818, nx:68, ny:102, stn:133, area:['대전'], wide:['대전'],
+  regLand:'11C20000', regTa:'11C20401'},
+ {id:'gsCY',     name:'군산 CY',  addr:'전북 군산시 서해로 194',
+  lat:35.97328, lon:126.57321, nx:53, ny:92,  stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도'],
+  regLand:'11F10000', regTa:'11F10501'},
+ {id:'asanCY',   name:'아산 CY',  addr:'충남 아산시 탕정면 탕정로 251',
+  lat:36.81562, lon:127.05930, nx:61, ny:110, stn:133, area:['아산'], wide:['충남','충청남도'],
+  regLand:'11C20000', regTa:'11C20301'},                                    // 대전·충남 / 아산
+ {id:'uiwang',   name:'의왕',     addr:'경기 의왕시 오봉로 175',
+  lat:37.33365, lon:126.96242, nx:60, ny:122, stn:109, area:['의왕'], wide:['경기','경기도'],
+  regLand:'11B00000', regTa:'11B20601'}                                     // 서울·경기 / 수원
+];
+// 본사 — 주간예보에만 표시 (폭염 현황표의 거점 열에는 들어가지 않음)
+const HQ_SITE={id:'hqSeoul', name:'본사(서울)', addr:'서울 중구 을지로 100',
+  lat:37.56626, lon:126.98322, nx:60, ny:127, stn:109, area:['서울'], wide:['서울'],
+  regLand:'11B00000', regTa:'11B10101'};
+// 기상 수집 대상 = 본사 + 10개 거점
+const WX_SITES=[HQ_SITE, ...SITES];
+
+/* 주간예보 행 구성 — 같은 좌표를 쓰는 거점은 묶어서 한 줄로 */
+const WEEK_ROWS=[
+  {label:'본사(서울)',     ids:['hqSeoul']},
+  {label:'군산 / 군산 CY', ids:['gunsan','gsCY']},
+  {label:'장항',           ids:['janghang']},
+  {label:'대전',           ids:['daejeon']},
+  {label:'천안',           ids:['cheonan']},
+  {label:'신탄진 / 신탄진 CY', ids:['sintanjin','stjCY']},
+  {label:'부산신항',       ids:['busanNP']},
+  {label:'아산 CY',        ids:['asanCY']},
+  {label:'의왕',           ids:['uiwang']}
 ];
 const ALERT_LV=['없음','주의보','경보','중대경보'];
+const ALERT_CLS={'없음':'a0','주의보':'a1','경보':'a2','중대경보':'a3'};
 const HQ={id:'HQ',name:'국내사업부장'};
 // 로그인 드롭다운 : 국내사업부장 최상단 + 나머지 가나다순
-const LOGIN_LIST=[HQ, ...SITES.slice().sort((a,b)=>a.name.localeCompare(b.name,'ko'))];
+const LOGIN_LIST=[HQ, ...SITES.slice().sort((a,b)=>a.name.localeCompare(b.name,'ko'))];  // rebuildDerived() 로 갱신
 const ROWS=[{k:'worker',label:'근로자'},{k:'facility',label:'제품 (시설)'},{k:'transport',label:'운송'}];
-const CITIES=[{n:'서울',nx:60,ny:127},{n:'대전',nx:67,ny:100},{n:'부산',nx:98,ny:76}];
 
 /* ── 공공데이터포털 인증키 (기상청 단기예보·중기예보·기상특보 공통) ──
    ※ 이 파일을 여는 사람은 소스보기로 키를 확인할 수 있습니다.
@@ -315,12 +557,17 @@ const API_PROXY=(location.protocol==='http:'||location.protocol==='https:') ? '/
    연결이 안 되면 자동으로 이 브라우저 저장소만 쓰고, 복구되면 다시 올립니다. */
 const FB='https://weather-5eb52-default-rtdb.asia-southeast1.firebasedatabase.app';
 
-const K={db:'heatDB',log:'heatLOG',cfg:'heatCFG',ses:'heatSES'};
+const K={db:'heatDB',log:'heatLOG',cfg:'heatCFG',ses:'heatSES',usr:'heatUSERS'};
+/* 등록 사용자 — { id, site, name, level:'user'|'manager' }
+   level  user    : 일반사용자 (자기 거점만 / 국내사업부장이면 기타사항)
+          manager : 관리자 (표 전체 입력, 로그 조회 불가)
+   최고관리자는 접속코드 skingws 로만 들어온다. */
+let USERS=[];
 let DB={}, LOG=[], SES=null;
 let CFG={key:API_KEY, proxy:API_PROXY, mode:'live'};
 let NETFAIL=null, NETFAIL_MSG='';        // 실시간 조회 실패 사유
 let VIEW=null;              // 현재 조회중인 날짜 YYYY-MM-DD
-let LIVE={sites:{},cities:{},week:[],at:null};   // 실시간(현재) 기상
+let LIVE={sites:{},week:[],weekBySite:{},pending:[],at:null};   // 실시간(현재) 기상
 
 const S={g:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
          s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -372,50 +619,60 @@ const KMA={
     return `https://apis.data.go.kr/1360000/${p}?`
          + new URLSearchParams({serviceKey:CFG.key,dataType:'JSON',...q});
   },
-  async ncst(nx,ny,at){                                  // 초단기실황
-    const d=at?new Date(at):new Date(Date.now()-45*60000);
-    if(at) d.setMinutes(d.getMinutes()-5);
+  /* 초단기실황 — 정시 관측이 약 40분 뒤 공개된다.
+     한 번 성공한 기준시각을 기억해 나머지 거점은 1회 호출로 끝낸다. */
+  _ncstAt:null,
+  async _ncstTry(nx,ny,d){
     const r=await fetch(this.url('VilageFcstInfoService_2.0/getUltraSrtNcst',
-      {pageNo:1,numOfRows:60,base_date:ymd(d),base_time:pad(d.getHours())+'00',nx,ny}));
+      {pageNo:1,numOfRows:20,base_date:ymd(d),base_time:pad(d.getHours())+'00',nx,ny}));
     const j=await r.json(), it=j?.response?.body?.items?.item;
-    if(!it) throw new Error(j?.response?.header?.resultMsg||'실황 오류');
-    const o={}; it.forEach(x=>o[x.category]=parseFloat(x.obsrValue)); return o;
+    if(!it||!it.length) return null;
+    const o={}; it.forEach(x=>o[x.category]=parseFloat(x.obsrValue));
+    return o;
   },
-  async sky(nx,ny){                                      // 초단기예보 SKY
-    const d=new Date(Date.now()-50*60000);
-    const r=await fetch(this.url('VilageFcstInfoService_2.0/getUltraSrtFcst',
-      {pageNo:1,numOfRows:60,base_date:ymd(d),base_time:pad(d.getHours())+'30',nx,ny}));
-    const j=await r.json(), it=j?.response?.body?.items?.item||[];
-    const s=it.find(x=>x.category==='SKY'); return s?+s.fcstValue:1;
+  async ncst(nx,ny,at){
+    if(!at && this._ncstAt){                             // 이미 확정된 기준시각 사용
+      const o=await this._ncstTry(nx,ny,this._ncstAt);
+      if(o) return o;
+    }
+    const base=at?new Date(at):new Date(Date.now()-40*60000);
+    let last='';
+    for(let back=0;back<4;back++){
+      const d=new Date(base.getTime()-back*3600e3);
+      try{
+        const o=await this._ncstTry(nx,ny,d);
+        if(o){ if(!at) this._ncstAt=d; return o }
+        last='자료 없음';
+      }catch(e){ last=e.message }
+    }
+    throw new Error(last||'실황 오류');
   },
   async vilage(nx,ny){                                   // 단기예보 3일
     const d=new Date(); const hs=[23,20,17,14,11,8,5,2];
     let h=hs.find(x=>d.getHours()>=x+1)??23;
     if(h===23&&d.getHours()<3) d.setDate(d.getDate()-1);
     const r=await fetch(this.url('VilageFcstInfoService_2.0/getVilageFcst',
-      {pageNo:1,numOfRows:800,base_date:ymd(d),base_time:pad(h)+'00',nx,ny}));
+      {pageNo:1,numOfRows:1000,base_date:ymd(d),base_time:pad(h)+'00',nx,ny}));
     const j=await r.json(); return j?.response?.body?.items?.item||[];
   },
-  async mid(regLand,regTa){                              // 중기예보 4~10일
-    const n=new Date(); const t=new Date(n);
-    t.setHours(n.getHours()<18?6:18,0,0,0);
-    if(n.getHours()<6){t.setDate(t.getDate()-1);t.setHours(18)}
-    const tm=ymd(t)+pad(t.getHours())+'00';
-    const [a,b]=await Promise.all([
-      fetch(this.url('MidFcstInfoService/getMidLandFcst',{pageNo:1,numOfRows:10,regId:regLand,tmFc:tm})).then(r=>r.json()),
-      fetch(this.url('MidFcstInfoService/getMidTa',{pageNo:1,numOfRows:10,regId:regTa,tmFc:tm})).then(r=>r.json())
-    ]);
-    return {land:a?.response?.body?.items?.item?.[0]||{}, ta:b?.response?.body?.items?.item?.[0]||{}};
-  },
-  /* 기상특보 통보문 — t6 에 현재 발효 현황이 구역까지 들어 있다 */
+  /* 기상특보 통보문 — t6 에 발효 현황이 구역까지 들어 있다.
+     ※ 주의 : tmFc(발표시각)와 t5(발효시각)가 다르다.
+        "07/29 16시 발표 / 07/30 11시 발효" 처럼 미래에 적용될 통보문이 섞여 있어서
+        발표시각만 보고 최신 것을 고르면 아직 오지 않은 특보를 현재 상태로 표시하게 된다.
+        → t5(발효시각)가 이미 지난 것들 중에서 가장 나중에 발효된 것을 채택한다. */
   async warnMsg(stn){
-    const t=new Date(), f=new Date(Date.now()-48*3600e3);
+    const t=new Date(), f=new Date(Date.now()-72*3600e3);
     const r=await fetch(this.url('WthrWrnInfoService/getWthrWrnMsg',
-      {pageNo:1,numOfRows:10,stnId:stn,fromTmFc:ymd(f),toTmFc:ymd(t)}));
+      {pageNo:1,numOfRows:20,stnId:stn,fromTmFc:ymd(f),toTmFc:ymd(t)}));
     const j=await r.json();
     const items=j?.response?.body?.items?.item||[];
     if(!items.length) return null;
-    return items.reduce((a,b)=>(+b.tmFc>+a.tmFc?b:a));      // 가장 최근 통보문
+    const now=+(`${ymd(t)}${pad(t.getHours())}${pad(t.getMinutes())}`);
+    const eff=(i)=>+(i.t5||i.tmFc||0);
+    const live=items.filter(i=>eff(i)<=now);
+    const future=items.filter(i=>eff(i)>now).sort((a,b)=>eff(a)-eff(b))[0]||null;
+    if(!live.length) return {cur:null, next:future};
+    return { cur: live.reduce((a,b)=>(eff(b)>eff(a)?b:a)), next:future };
   }
 };
 
@@ -452,13 +709,13 @@ function segHit(site, seg){
   return excl ? !listed : listed;
 }
 function parseHeatT6(t6){
-  const out={}; SITES.forEach(s=>out[s.id]='없음');
+  const out={}; WX_SITES.forEach(s=>out[s.id]='없음');
   if(!t6) return out;
   t6.split(/\r?\n/).forEach(L=>{
     const m=L.match(/폭염(중대경보|경보|주의보)\s*[:：]\s*(.+)$/);
     if(!m) return;
     const lv=m[1], segs=splitTop(m[2]);
-    SITES.forEach(s=>{
+    WX_SITES.forEach(s=>{
       if(ALERT_LV.indexOf(lv) <= ALERT_LV.indexOf(out[s.id])) return;   // 상위 등급 유지
       if(segs.some(seg=>segHit(s,seg))) out[s.id]=lv;
     });
@@ -476,11 +733,10 @@ const DEMO={
   stjCY:{sky:4,pty:0,ta:31.6,rh:69,wsd:1.7}, gsCY:{sky:4,pty:0,ta:30.1,rh:74,wsd:2.1},
   asanCY:{sky:3,pty:0,ta:30.9,rh:71,wsd:1.9}, uiwang:{sky:4,pty:0,ta:31.0,rh:70,wsd:1.6}
 };
-const DEMO_CITY={'서울':{sky:4,pty:0,ta:31.4},'대전':{sky:4,pty:0,ta:31.2},'부산':{sky:1,pty:0,ta:30.6}};
 
 function demoWeek(){
   const a=[];
-  for(let i=0;i<7;i++){
+  for(let i=0;i<4;i++){
     const d=new Date(); d.setDate(d.getDate()+i);
     const sky=[4,3,1,1,3,4,3][i], pop=[30,20,0,0,20,60,30][i];
     a.push({date:d, sky, pty:0, pop, mn:[24,25,25,26,26,24,23][i], mx:[33,34,35,36,34,31,30][i]});
@@ -489,71 +745,112 @@ function demoWeek(){
 }
 
 function fillDemo(at){
-  SITES.forEach(s=>{const d=DEMO[s.id]; LIVE.sites[s.id]={...d,feels:feels(d.ta,d.rh,d.wsd),alert:heatAlert(feels(d.ta,d.rh,d.wsd))}});
-  CITIES.forEach(c=>LIVE.cities[c.n]=DEMO_CITY[c.n]);
+  WX_SITES.forEach(s=>{const d=DEMO[s.id]||{sky:3,pty:0,ta:31.0,rh:70,wsd:2.0};
+    LIVE.sites[s.id]={...d,feels:feels(d.ta,d.rh,d.wsd),alert:heatAlert(feels(d.ta,d.rh,d.wsd))}});
   LIVE.week=demoWeek(); LIVE.at=at;
+  LIVE.weekBySite={}; WEEK_ROWS.forEach(r=>LIVE.weekBySite[r.ids[0]]=demoWeek());
+  LIVE.pending=[];
 }
 
 async function collect(){
   const at=new Date();
-  NETFAIL=null;
+  NETFAIL=null; KMA._ncstAt=null;
   if(CFG.mode!=='live'||!CFG.key){ fillDemo(at); return {ok:0,fail:0,demo:true} }
   let ok=0,fail=0, lastErr='';
-  await Promise.all(SITES.map(async s=>{
+
+  // ① 예보 먼저 — 행 대표 거점만 (같은 좌표 중복 호출 방지). 하늘상태도 여기서 얻는다.
+  LIVE.weekBySite={};
+  await Promise.all(WEEK_ROWS.map(async row=>{
+    const s=WX_SITES.find(x=>x.id===row.ids[0]);
+    if(!s) return;
+    try{ LIVE.weekBySite[row.ids[0]]=await buildWeek(s) }
+    catch(e){ LIVE.weekBySite[row.ids[0]]=null }
+  }));
+  const skyOf={};                                   // 거점 → 오늘 하늘상태
+  WEEK_ROWS.forEach(row=>{
+    const w=LIVE.weekBySite[row.ids[0]];
+    const v=skyNow(w);
+    row.ids.forEach(id=>skyOf[id]=v);
+  });
+
+  // ② 실황 — 기준시각을 한 번 찾은 뒤 나머지는 1회 호출
+  try{ await KMA.ncst(WX_SITES[0].nx, WX_SITES[0].ny) }catch(e){}
+  await Promise.all(WX_SITES.map(async s=>{
     try{
-      const [n,sk]=await Promise.all([KMA.ncst(s.nx,s.ny), KMA.sky(s.nx,s.ny).catch(()=>1)]);
+      const n=await KMA.ncst(s.nx,s.ny);
       const f=feels(n.T1H,n.REH,n.WSD);
-      LIVE.sites[s.id]={sky:sk,pty:n.PTY||0,ta:n.T1H,rh:n.REH,wsd:n.WSD,feels:f,alert:heatAlert(f)};
+      const sk=skyOf[s.id]||{sky:1,pty:0};
+      LIVE.sites[s.id]={sky:sk.sky??1, pty:(n.PTY||sk.pty||0), ta:n.T1H, rh:n.REH, wsd:n.WSD,
+                        feels:f, alert:heatAlert(f)};
       ok++;
     }catch(e){fail++;lastErr=e.message;console.warn(s.name,e.message)}
   }));
-  // 전 거점 실패 → 데모 데이터로 자동 전환하고 사유 안내
-  if(ok===0){
+  if(ok===0){                                       // 전 거점 실패 → 데모로 전환
     NETFAIL = /SERVICE|KEY|등록되지|LIMITED/i.test(lastErr) ? 'key'
             : (CFG.proxy ? 'proxy' : 'cors');
     NETFAIL_MSG = lastErr;
     fillDemo(at);
     return {ok:0,fail,demo:true};
   }
-  // 폭염특보 — 관서별 통보문 t6 에서 구역까지 읽어 자동 배정 (실패 시 체감온도 추정값 유지)
+
+  // ③ 폭염특보 — 관서 4곳 병렬 조회
+  LIVE.pending=[];
   try{
-    for(const st of [...new Set(SITES.map(s=>s.stn))]){
-      const msg=await KMA.warnMsg(st);
-      if(!msg) continue;
-      const m=parseHeatT6(msg.t6);
-      SITES.filter(s=>s.stn===st).forEach(s=>{
-        if(LIVE.sites[s.id]){ LIVE.sites[s.id].alert=m[s.id]; LIVE.sites[s.id].alertSrc='kma' }
-      });
-    }
+    const stns=[...new Set(WX_SITES.map(s=>s.stn))];
+    const res=await Promise.all(stns.map(st=>KMA.warnMsg(st).catch(()=>null)));
+    stns.forEach((st,i)=>{
+      const r=res[i]; if(!r) return;
+      const mine=WX_SITES.filter(s=>s.stn===st);
+      if(r.cur){
+        const m=parseHeatT6(r.cur.t6);
+        mine.forEach(s=>{ if(LIVE.sites[s.id]){
+          LIVE.sites[s.id].alert=m[s.id]; LIVE.sites[s.id].alertSrc='kma';
+          LIVE.sites[s.id].alertAt=String(r.cur.t5||r.cur.tmFc);
+        }});
+      }
+      if(r.next){
+        const nm=parseHeatT6(r.next.t6);
+        mine.forEach(s=>{
+          const cur=LIVE.sites[s.id]?.alert||'없음';
+          if(nm[s.id]!==cur) LIVE.pending.push({name:s.name, from:cur, to:nm[s.id], at:String(r.next.t5)});
+        });
+      }
+    });
   }catch(e){ console.warn('폭염특보 조회 실패', e.message) }
-  await Promise.all(CITIES.map(async c=>{
-    try{const n=await KMA.ncst(c.nx,c.ny); const sk=await KMA.sky(c.nx,c.ny).catch(()=>1);
-      LIVE.cities[c.n]={sky:sk,pty:n.PTY||0,ta:n.T1H}}catch(e){LIVE.cities[c.n]=null}
-  }));
-  LIVE.week=await buildWeek().catch(()=>demoWeek());
+
+  LIVE.week=LIVE.weekBySite['daejeon']||[];
   LIVE.at=at; return {ok,fail};
 }
 
-async function buildWeek(){
+/* 단기예보 3일 (D+0 ~ D+2) — 거점 격자(5km) 기준
+   중기예보는 쓰지 않는다. 호출 수를 줄여 화면이 빨리 뜨게 한 선택.
+   오늘의 하늘상태도 이 응답에서 뽑아 별도 호출을 없앴다. */
+const FC_DAYS=3;
+async function buildWeek(site){
   const out=[];
-  const items=await KMA.vilage(67,100);                    // 대전 기준 (중부)
+  const items=await KMA.vilage(site.nx, site.ny).catch(()=>[]);
   const byDay={};
   items.forEach(i=>{ (byDay[i.fcstDate]=byDay[i.fcstDate]||[]).push(i) });
-  for(let i=0;i<3;i++){
-    const d=new Date(); d.setDate(d.getDate()+i);
-    const arr=byDay[ymd(d)]||[]; const pick=(c,t)=>arr.find(x=>x.category===c&&(!t||x.fcstTime===t))?.fcstValue;
-    out.push({date:d, sky:+(pick('SKY','1200')||pick('SKY')||1), pty:+(pick('PTY','1200')||0),
-      pop:+(pick('POP','1200')||0), mn:parseFloat(pick('TMN'))||null, mx:parseFloat(pick('TMX'))||null});
-  }
-  const m=await KMA.mid('11C20000','11C20101');
-  for(let i=3;i<7;i++){
-    const d=new Date(); d.setDate(d.getDate()+i);
-    const wf=m.land['wf'+i+'Am']||m.land['wf'+i]||'';
-    out.push({date:d, sky:/흐림/.test(wf)?4:/구름/.test(wf)?3:1, pty:/비|눈/.test(wf)?1:0,
-      pop:+(m.land['rnSt'+i+'Am']||m.land['rnSt'+i]||0),
-      mn:m.ta['taMin'+i]??null, mx:m.ta['taMax'+i]??null});
+  for(let i=0;i<FC_DAYS;i++){
+    const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+i);
+    const arr=byDay[ymd(d)]||[];
+    if(!arr.length){ out.push({date:d, near:true, sky:null, pty:0, pop:null, mn:null, mx:null}); continue }
+    const pick=(c,t)=>arr.find(x=>x.category===c&&(!t||x.fcstTime===t))?.fcstValue;
+    const num=c=>arr.filter(x=>x.category===c).map(x=>+x.fcstValue).filter(v=>!isNaN(v));
+    const tmps=num('TMP'), pops=num('POP');
+    const mn=parseFloat(pick('TMN')), mx=parseFloat(pick('TMX'));
+    out.push({date:d, near:true,
+      sky:+(pick('SKY','1200')||pick('SKY')||1), pty:+(pick('PTY','1200')||0),
+      pop:pops.length?Math.max(...pops):0,
+      mn:isNaN(mn)?(tmps.length?Math.min(...tmps):null):mn,
+      mx:isNaN(mx)?(tmps.length?Math.max(...tmps):null):mx});
   }
   return out;
+}
+/* 지금 시각에 가까운 하늘상태·강수형태를 단기예보에서 뽑는다 */
+function skyNow(week){
+  const t=week&&week[0];
+  return t ? {sky:t.sky??1, pty:t.pty??0} : {sky:1,pty:0};
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -590,17 +887,38 @@ function day(k){ return DB[k]=normalizeDay(DB[k], k) }
    5-2. 공용 저장소 동기화
    ════════════════════════════════════════════════════════════ */
 let DBOK=null, SYNCING=false;      // null=확인전 / true=연결됨 / false=끊김
+let DBPERM=[];                     // 권한(401)으로 막힌 경로 목록
 
+function dbErr(status, path){
+  const e=new Error(status===401?'권한 없음 (보안규칙)':'DB '+status);
+  e.status=status; e.path=path;
+  if(status===401 && !DBPERM.includes(path)) DBPERM.push(path);
+  return e;
+}
 async function fbGet(path){
   const [p,q]=String(path).split('?');            // .json 은 쿼리 앞에 와야 한다
   const r=await fetch(`${FB}${p}.json${q?'?'+q:''}`, {cache:'no-store'});
-  if(!r.ok) throw new Error('DB '+r.status);
+  if(!r.ok) throw dbErr(r.status, p);
   return r.json();
 }
 async function fbSend(path, body, method){
   const r=await fetch(`${FB}${path}.json`, {method, body:JSON.stringify(body)});
-  if(!r.ok) throw new Error('DB '+r.status);
+  if(!r.ok) throw dbErr(r.status, path);
   return r.json();
+}
+/* 보안규칙 안내문 — 권한오류가 났을 때 그대로 붙여넣을 수 있게 */
+const FB_RULES=`{
+  "rules": {
+    "days":  { ".read": true, ".write": true },
+    "logs":  { ".read": true, ".write": true },
+    "users": { ".read": true, ".write": true },
+    "sites": { ".read": true, ".write": true }
+  }
+}`;
+function permHelp(){
+  return '공용 저장소 보안규칙에서 막혀 있습니다.\n\n'
+    + 'Firebase 콘솔 → Realtime Database → 규칙 에 아래를 붙여넣고 [게시]하세요.\n\n'
+    + FB_RULES + '\n\n막힌 경로 : ' + DBPERM.join(', ');
 }
 const fbPatch=(p,b)=>fbSend(p,b,'PATCH');
 const fbPush =(p,b)=>fbSend(p,b,'POST');
@@ -619,7 +937,7 @@ async function pullDay(dstr){
     if(rec.locked) d.locked=true;
     save();
     return true;
-  }catch(e){ DBOK=false; console.warn('DB 읽기 실패', e.message); return false }
+  }catch(e){ if(e.status!==401) DBOK=false; console.warn('DB 읽기 실패', e.message); return false }
 }
 /* 화면 → 서버 : 바뀐 부분만 올림 */
 async function pushNote(dstr, siteId, obj){
@@ -637,11 +955,37 @@ async function pushWx(dstr, d){
 async function pushLog(entry){
   try{ await fbPush('/logs', entry) }catch(e){}
 }
+/* ── 사용자 명부 ─────────────────────────────────────────── */
+async function pullUsers(){
+  try{
+    const o=await fbGet('/users'); DBOK=true;
+    USERS=Object.entries(o||{}).map(([id,v])=>({id, site:v.site, name:v.name, level:v.level||'user'}))
+                .filter(u=>u.site&&u.name);
+    S.s(K.usr,USERS);
+  }catch(e){ if(e.status!==401) DBOK=false; USERS=S.g(K.usr,[]) }   // 실패 시 마지막 명부 사용
+  return USERS;
+}
+async function saveUser(u){
+  const body={site:u.site, name:u.name, level:u.level};
+  if(u.id) await fbSend(`/users/${u.id}`, body, 'PUT');
+  else { const r=await fbPush('/users', body); u.id=r&&r.name }
+  await pullUsers(); return u;
+}
+async function deleteUser(id){
+  const r=await fetch(`${FB}/users/${id}.json`, {method:'DELETE'});
+  if(!r.ok) throw dbErr(r.status,'/users');
+  await pullUsers();
+}
+function findUser(site,name){
+  const n=String(name).trim();
+  return USERS.find(u=>u.site===site && u.name===n) || null;
+}
+
 /* 저장 가능한 일자 목록 */
 async function pullDates(){
   try{ const o=await fbGet('/days?shallow=true'); DBOK=true;
        Object.keys(o||{}).forEach(k=>{ if(!DB[k]) DB[k]=blankDay(k) }); save(); }
-  catch(e){ DBOK=false }
+  catch(e){ if(e.status!==401) DBOK=false }
 }
 /* 주기 동기화 — 다른 거점이 입력한 내용이 자동으로 반영됨 */
 async function syncTick(){
@@ -655,6 +999,13 @@ async function syncTick(){
 }
 function renderDbTag(){
   const el=document.getElementById('dbTag'); if(!el) return;
+  if(DBPERM.length){
+    el.textContent='● 저장소 권한 오류 (보안규칙 확인)';
+    el.style.color='#ffd27f'; el.style.cursor='pointer';
+    el.onclick=()=>alert(permHelp());
+    return;
+  }
+  el.onclick=null; el.style.cursor='';
   el.textContent = DBOK===true ? '● 공용 저장소 연결됨'
                  : DBOK===false ? '● 공용 저장소 끊김 (이 브라우저에만 저장)' : '';
   el.style.color = DBOK===true ? '#7fd6a4' : '#f0b7ae';
@@ -667,34 +1018,29 @@ function applyLive(d){
 }
 
 async function ensureToday(){
-  const t=today();
-  day(t);
-  const now=new Date();
-  // 14시 경과 & 미확정이면 자동 확정
-  if(!DB[t].locked && now.getHours()>=14){
-    await captureBase(t,true);
-  }else if(!DB[t].locked){
-    applyLive(DB[t]);                       // 14시 전 → 현재 실황을 임시 표시
-  }
+  const d=day(today());
+  applyLive(d);
+  if(!d.baseAt) d.baseAt=stampNow();
   save();
 }
-async function captureBase(dstr,auto){
-  const d=day(dstr);
-  if(CFG.mode==='live' && CFG.key && !NETFAIL){
-    const base=new Date(dstr+'T14:00:00');
-    await Promise.all(SITES.map(async s=>{
-      try{ const n=await KMA.ncst(s.nx,s.ny,base);
-        const f=feels(n.T1H,n.REH,n.WSD);
-        d.wx[s.id]={sky:LIVE.sites[s.id]?.sky??1,pty:n.PTY||0,ta:n.T1H,rh:n.REH,wsd:n.WSD,feels:f,
-                    alert:LIVE.sites[s.id]?.alert||heatAlert(f)};
-      }catch(e){ d.wx[s.id]=LIVE.sites[s.id]?{...LIVE.sites[s.id]}:null }
-    }));
-  }else{
-    applyLive(d);
-  }
-  d.baseAt=dstr+' 14:00'; d.locked=true;
-  addLog(auto?'자동':'수동','시스템','-','14시 기준 기상 확정','', dstr+' 14:00');
-  save(); pushWx(dstr, d);                      // 확정값을 전 거점이 공유
+/* 표 헤더에 쓰는 기준시각 문자열 */
+function stampNow(){
+  const n=new Date();
+  return `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())} ${pad(n.getHours())}:${pad(n.getMinutes())}`;
+}
+function headText(dstr, baseAt){
+  const dt=new Date(dstr+'T00:00:00');
+  const hm=(baseAt||'').split(' ')[1];
+  const tail = hm ? `${+hm.split(':')[0]}시 ${hm.split(':')[1]}분 기준` : '기준';
+  return `${dt.getFullYear()}년 ${dt.getMonth()+1}월 ${dt.getDate()}일 (${DOW[dt.getDay()]}) ${tail}`;
+}
+/* 오늘 표의 기상값과 기준시각을 현재 시점으로 갱신하고 전 거점에 공유 */
+function stampToday(){
+  const t=today(), d=day(t);
+  applyLive(d);
+  d.baseAt=stampNow();
+  save(); pushWx(t, d);
+  return d;
 }
 function save(){ S.s(K.db,DB); S.s(K.log,LOG) }
 
@@ -702,9 +1048,11 @@ function save(){ S.s(K.db,DB); S.s(K.log,LOG) }
    6. 로그인 / 권한
    ════════════════════════════════════════════════════════════ */
 /* 접속코드 → 권한
-   rladnjstkd : 관리자      — 전 칸 입력 + 로그 조회/다운로드
+   skingws    : 관리자      — 전 칸 입력 + 로그 조회/다운로드
+   rkdtmdwns  : 일반관리자  — 전 칸 입력, 로그 조회 불가
    rlarhkdqja : 통합입력자  — 전 칸 입력, 로그 조회 불가              */
-const CODES={ rladnjstkd:{role:'admin', label:'관리자'},
+const CODES={ skingws:   {role:'admin', label:'관리자'},
+              rkdtmdwns: {role:'super', label:'일반관리자'},
               rlarhkdqja:{role:'super', label:'통합입력자'} };
 
 function showAdm(on){
@@ -716,10 +1064,16 @@ function showAdm(on){
 function doLogin(){
   const site=document.getElementById('lgSite').value;
   const name=document.getElementById('lgName').value.trim();
-  if(!name){ document.getElementById('lgErr').textContent='이름을 입력하세요.'; return }
-  SES={site, name, role: site==='HQ'?'hq':'site'};
+  const err=document.getElementById('lgErr');
+  if(!name){ err.textContent='이름을 입력하세요.'; return }
+  if(!USERS.length){
+    err.innerHTML='등록된 사용자가 없습니다.<br>관리자에게 사용자 등록을 요청하세요.'; return }
+  const u=findUser(site,name);
+  if(!u){ err.innerHTML='등록되지 않은 사용자입니다.<br>소속과 이름을 확인하세요.'; return }
+  SES={site, name:u.name, uid:u.id,
+       role: u.level==='manager' ? 'super' : (site==='HQ' ? 'hq' : 'site')};
   S.s(K.ses,SES);
-  addLog('로그인', SES.name, siteName(site), '-','','');
+  addLog('로그인', SES.name, siteName(site), u.level==='manager'?'관리자':'일반사용자','','');
   save(); start();
 }
 function doAdmin(){
@@ -738,7 +1092,8 @@ function siteName(id){ return id==='HQ'?'국내사업부장'
   : id==='ALL'?(SES?.name||'관리자') : (SITES.find(s=>s.id===id)?.name||id) }
 
 const isAll   = ()=> SES && (SES.role==='admin'||SES.role==='super');
-function canViewLog(){ return SES && SES.role==='admin' }          // 관리자 전용
+function canViewLog(){ return SES && SES.role==='admin' }          // 최고관리자 전용
+function isRoot(){ return SES && SES.role==='admin' }              // 사용자 관리 권한
 function canEditNote(siteId){
   if(!SES) return false;
   if(isAll()) return true;                                          // 전 칸 + 과거일자 포함
@@ -796,39 +1151,64 @@ function renderTop(){
          <span style="opacity:.7">(${esc(NETFAIL_MSG)})</span>`;
   }else nb.style.display='none';
 
-  const alerts=SITES.filter(s=>LIVE.sites[s.id]&&LIVE.sites[s.id].alert!=='없음');
+  // ── 특이사항 요약 ──────────────────────────────────────
+  const byLv={}; ALERT_LV.forEach(l=>byLv[l]=[]);
+  SITES.forEach(s=>{ const a=LIVE.sites[s.id]?.alert||'없음'; (byLv[a]=byLv[a]||[]).push(s.name) });
   const hot=SITES.map(s=>({n:s.name,f:LIVE.sites[s.id]?.feels??-99})).sort((a,b)=>b.f-a.f)[0];
-  document.getElementById('natSummary').innerHTML=
-    `전국 <b>${w[0]?SKYT[w[0].sky]||'맑음':'—'}</b> · 강수확률 <b>${w[0]?.pop??0}%</b><br>`+
-    `폭염특보 발효 거점 <b style="color:${alerts.length?'#C00000':'#1f9254'}">${alerts.length}개소</b>`+
-    (alerts.length?` <span style="font-size:11px;color:#6b7688">(${alerts.map(a=>a.name).join(', ')})</span>`:'')+
-    `<br>최고 체감온도 <b style="color:#C00000">${hot.f>-99?hot.f.toFixed(1)+'℃':'—'}</b> <span style="font-size:11px;color:#6b7688">${hot.n}</span>`;
-  document.getElementById('natCities').innerHTML=CITIES.map(c=>{
-    const d=LIVE.cities[c.n];
-    return `<div><div class="c-n">${c.n}</div><div style="font-size:17px">${d?skyIcon(d.sky,d.pty):'—'}</div>
-      <div class="c-t">${d?d.ta+'℃':'—'}</div></div>`}).join('');
+  const onCnt=SITES.length-byLv['없음'].length;
+  const line=(lv,color)=>byLv[lv].length
+    ? `<div><b style="color:${color}">폭염${lv}</b> ${byLv[lv].length}개소 &nbsp;<span class="nm">${byLv[lv].join(', ')}</span></div>` : '';
+  let html='';
+  html+=line('중대경보','#8e1d14')+line('경보','#C00000')+line('주의보','#b7791f');
+  if(!onCnt) html+=`<div><b style="color:#1f9254">폭염특보 발효 없음</b> <span class="nm">전 거점 이상 없음</span></div>`;
+  html+=`<div>최고 체감온도 <b style="color:#C00000">${hot.f>-99?hot.f.toFixed(1)+'℃':'—'}</b> <span class="nm">${hot.n}</span></div>`;
+  if(LIVE.pending&&LIVE.pending.length)
+    html+='<div>발효 예정 '+LIVE.pending.map(p=>{
+      const t=String(p.at);
+      return `<span class="nm">${p.name}</span> ${p.from}→<b>${p.to}</b> (${+t.slice(4,6)}/${+t.slice(6,8)} ${t.slice(8,10)}:${t.slice(10,12)})`;
+    }).join(' · ')+'</div>';
+  document.getElementById('natSummary').innerHTML=html;
 
-  document.getElementById('week').innerHTML=w.map((d,i)=>{
-    const dt=d.date, dw=dt.getDay();
-    return `<div class="wd ${dw===6?'sat':dw===0?'sun':''}">
-      <div class="d">${i===0?'오늘':(dt.getMonth()+1)+'.'+dt.getDate()} (${DOW[dw]})</div>
-      <div class="i">${skyIcon(d.sky,d.pty)}</div>
-      <div class="t"><span class="mn">${d.mn??'-'}</span> / <span class="mx">${d.mx??'-'}</span></div>
-      <div class="p">💧${d.pop??0}%</div></div>`}).join('');
-
+  // ── 거점별 현재 기상 (폭염특보 단계별 음영) ──────────────
   document.getElementById('siteStrip').innerHTML=SITES.map(s=>{
     const d=LIVE.sites[s.id];
-    const cls=!d?'':d.feels>=35?'hot':d.feels>=33?'warn':'';
-    return `<div class="st ${cls}"><div class="n">${s.name}</div>
+    const lv=d?d.alert:'없음';
+    return `<div class="st ${ALERT_CLS[lv]||'a0'}" title="${esc(s.addr)}">
+      <div class="n">${s.name}</div>
       <div class="i">${d?skyIcon(d.sky,d.pty):'—'}</div>
       <div class="t">${d?d.ta+'℃':'—'}</div>
-      <div class="f">체감 <b>${d?d.feels.toFixed(1)+'℃':'—'}</b></div></div>`}).join('');
+      <div class="f">체감 <b>${d?d.feels.toFixed(1)+'℃':'—'}</b></div>
+      <div class="al">${lv==='없음'?'특보 없음':lv}</div></div>`}).join('');
+
+  // ── 거점별 주간예보 (공통좌표 묶음 + 이름 아래 특보현황) ──
+  const box=document.getElementById('weekSites');
+  if(box){
+    const ref=(LIVE.weekBySite&&LIVE.weekBySite[WEEK_ROWS[0].ids[0]])||LIVE.week||[];
+    document.getElementById('weekHead').innerHTML='<div class="wname"></div>'+ref.map((d,i)=>{
+      const dt=d.date, dw=dt.getDay();
+      return `<div class="wcell ${dw===6?'sat':dw===0?'sun':''}">${i===0?'오늘':(dt.getMonth()+1)+'.'+dt.getDate()}<br><span>(${DOW[dw]})</span></div>`;
+    }).join('');
+    box.innerHTML=WEEK_ROWS.map(row=>{
+      const wk=(LIVE.weekBySite&&LIVE.weekBySite[row.ids[0]])||[];
+      // 묶인 거점 중 가장 높은 등급을 대표로 표시
+      const lv=row.ids.map(id=>LIVE.sites[id]?.alert||'없음')
+                      .reduce((a,b)=>ALERT_LV.indexOf(b)>ALERT_LV.indexOf(a)?b:a,'없음');
+      const nameCell=`<div class="wname"><span class="wn">${row.label}</span>
+        <span class="wal ${ALERT_CLS[lv]}">${lv==='없음'?'특보 없음':'폭염'+lv}</span></div>`;
+      if(!wk.length) return `<div class="wrow">${nameCell}<div class="wcell" style="flex:4;color:#aab2c0">예보 없음</div></div>`;
+      return `<div class="wrow">${nameCell}`+wk.map(d=>
+        `<div class="wcell ${d.near?'':'mid'}">
+           <div class="i">${skyIcon(d.sky,d.pty)}</div>
+           <div class="t"><span class="mn">${d.mn??'-'}</span>/<span class="mx">${d.mx??'-'}</span></div>
+           <div class="p">${d.pop??0}%</div></div>`).join('')+`</div>`;
+    }).join('');
+  }
 }
 
 function renderTable(){
   const d=day(VIEW);
   const dt=new Date(VIEW+'T00:00:00');
-  const head=`${dt.getFullYear()}년 ${dt.getMonth()+1}월 ${dt.getDate()}일 (${DOW[dt.getDay()]}) 14시 기준`;
+  const head=headText(VIEW, d.baseAt);
   const cols=SITES.map(()=>'<col class="c-s">').join('');
   const cell=(v)=>v==null||v===''?'':v;
 
@@ -858,17 +1238,13 @@ function renderTable(){
   document.getElementById('tblBox').innerHTML=h;
 
   // 하단 안내
-  const pre = VIEW===today() && !DB[VIEW]?.locked;
   const scope = isAll() ? '전체 칸 (관리자 권한)'
               : SES.role==='hq' ? '기타사항'
               : siteName(SES.site)+' 열 (근로자/제품/운송)';
   document.getElementById('tip').innerHTML =
-    (pre? `⏳ 오늘 14시 기준 미확정 — 현재 실황을 임시 표시 중입니다 (14시 경과 시 자동 확정).`
-        : `✔ ${DB[VIEW]?.baseAt||VIEW+' 14:00'} 기준 확정`)
-    + ` · 편집 권한: <b>${scope}</b>`
-    + (VIEW!==today() ? (isAll()? ' · <b style="color:#b7791f">과거 자료 수정 가능</b>'
-                                : ' · <b style="color:#C00000">과거 자료 조회 모드 (수정 불가)</b>') : '');
-  document.getElementById('btn14').style.display = (SES.role==='hq'||isAll())?'':'none';
+    `기준시각 <b>${esc(d.baseAt||'—')}</b> · 편집 권한: <b>${scope}</b>`
+    + (VIEW!==today() ? (isAll()? ' · <b style="color:#b7791f">지난 자료 수정 가능</b>'
+                                : ' · <b style="color:#C00000">지난 자료 조회 모드 (수정 불가)</b>') : '');
 }
 
 function renderDates(){
@@ -919,6 +1295,265 @@ function saveM(){
 }
 function nowStamp(){const d=new Date();
   return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`}
+
+/* ════════════════════════════════════════════════════════════
+   8-3. 관리 페이지 (최고관리자 전용)
+   ════════════════════════════════════════════════════════════ */
+async function toggleUsr(){                       // 상단바 [관리 페이지] 버튼
+  if(!isRoot()){ alert('관리 페이지는 최고관리자만 접근할 수 있습니다.'); return }
+  document.getElementById('app').style.display='none';
+  document.getElementById('logView').style.display='none';
+  document.getElementById('adminPage').style.display='block';
+  document.getElementById('admWho').textContent=SES.name+' · 최고관리자';
+  document.getElementById('uSite').innerHTML=
+    LOGIN_LIST.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  admTab('users');
+  resetUserForm();
+  await pullUsers();
+  // 거점 정의가 아직 비어 있으면 내장 기본값(10개소)을 한 번에 올린다.
+  // 이걸 안 하면 한 건만 수정했을 때 그 한 건만 남아 표 열이 사라진다.
+  try{
+    const cur=await fbGet('/sites');
+    if(!cur || !Object.keys(cur).length) await seedSites();
+    await pullSites();
+  }catch(e){ /* 401 등은 아래 안내로 처리 */ }
+  resetSiteForm();
+  renderUsers(); renderSites(); renderDbTag();
+  if(DBPERM.length) alert(permHelp());
+}
+function closeAdminPage(){
+  document.getElementById('adminPage').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+function admTab(name){
+  ['users','sites'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = t===name?'block':'none';
+    document.querySelector(`.tab[data-tab="${t}"]`).classList.toggle('on', t===name);
+  });
+}
+
+/* ── 거점 마스터 관리 ─────────────────────────────────────── */
+let SEDIT=null;
+const SITE_FIELDS=['name','addr','lat','lon','nx','ny','area','stn'];
+function siteRecord(s){
+  return {name:s.name, addr:s.addr||'', lat:s.lat??null, lon:s.lon??null,
+          nx:s.nx, ny:s.ny, area:(s.area||[])[0]||'', stn:s.stn};
+}
+/* 공용 저장소에 저장된 거점 정의를 내려받아 SITES 를 갈아끼운다 */
+async function pullSites(){
+  try{
+    const o=await fbGet('/sites'); DBOK=true;
+    const rows=Object.entries(o||{});
+    // 저장된 정의가 내장 기본값보다 눈에 띄게 적으면 아직 시딩이 안 된 상태로 보고 무시한다
+    if(rows.length < 2) return false;
+    const built=rows.map(([id,v])=>{
+      const base=SITES.find(x=>x.id===id)||{};
+      return {...base, id,
+        name:v.name, addr:v.addr||'', lat:v.lat, lon:v.lon, nx:+v.nx, ny:+v.ny,
+        stn:+v.stn, area:[v.area||v.name], wide:base.wide||[v.area||v.name],
+        regLand:base.regLand||'11C20000', regTa:base.regTa||'11C20401',
+        order:(v.order??999)};
+    }).sort((a,b)=>a.order-b.order);
+    SITES.length=0; built.forEach(x=>SITES.push(x));
+    rebuildDerived();
+    S.s('heatSITES',SITES);
+    return true;
+  }catch(e){ if(e.status!==401) DBOK=false; return false }
+}
+/* 거점 목록이 바뀌면 파생 목록도 다시 만든다 */
+function rebuildDerived(){
+  LOGIN_LIST.length=0;
+  LOGIN_LIST.push(HQ, ...SITES.slice().sort((a,b)=>a.name.localeCompare(b.name,'ko')));
+  WX_SITES.length=0; WX_SITES.push(HQ_SITE, ...SITES);
+  WEEK_ROWS.length=0;
+  WEEK_ROWS.push({label:HQ_SITE.name, ids:[HQ_SITE.id]});
+  const used=new Set();
+  SITES.forEach(s=>{
+    if(used.has(s.id)) return;
+    const same=SITES.filter(x=>x.nx===s.nx&&x.ny===s.ny&&x.addr===s.addr);
+    same.forEach(x=>used.add(x.id));
+    WEEK_ROWS.push({label:same.map(x=>x.name).join(' / '), ids:same.map(x=>x.id)});
+  });
+}
+async function saveSiteRec(id, rec, order){
+  const body={...rec, order};
+  if(id) await fbSend(`/sites/${id}`, body, 'PUT');
+  else await fbPush('/sites', body);
+}
+/* 최초 1회 : 내장 기본값을 공용 저장소에 올린다 */
+async function seedSites(){
+  for(let i=0;i<SITES.length;i++) await saveSiteRec(SITES[i].id, siteRecord(SITES[i]), i);
+}
+function renderSites(){
+  document.getElementById('siteCnt').textContent=`등록 ${SITES.length}개소`;
+  document.getElementById('siteList').innerHTML =
+   `<table><thead><tr><th>거점명</th><th>주소</th><th>위도, 경도</th><th>격자</th>
+      <th>특보 시·군</th><th>관서</th><th></th></tr></thead><tbody>`
+   + SITES.map(s=>`<tr class="${SEDIT===s.id?'editing':''}">
+      <td><b>${esc(s.name)}</b></td><td>${esc(s.addr||'—')}</td>
+      <td class="g">${s.lat?.toFixed?s.lat.toFixed(5):'—'}, ${s.lon?.toFixed?s.lon.toFixed(5):'—'}</td>
+      <td class="g">${s.nx}, ${s.ny}</td>
+      <td>${esc((s.area||[])[0]||'—')}</td><td class="g">${s.stn}</td>
+      <td class="act" style="text-align:right;white-space:nowrap">
+        <button onclick="editSite('${s.id}')">수정</button>
+        <button class="del" onclick="removeSite('${s.id}')">삭제</button></td></tr>`).join('')
+   + `</tbody></table>`;
+}
+function resetSiteForm(){
+  SEDIT=null;
+  ['sName','sAddr','sLat','sLon','sNx','sNy','sArea'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('sStn').value='133';
+  document.getElementById('sBtn').textContent='+ 추가';
+  document.getElementById('sCancel').style.display='none';
+  document.getElementById('geoResult').innerHTML='';
+  renderSites();
+}
+function editSite(id){
+  const s=SITES.find(x=>x.id===id); if(!s) return;
+  SEDIT=id;
+  document.getElementById('sName').value=s.name;
+  document.getElementById('sAddr').value=s.addr||'';
+  document.getElementById('sLat').value=s.lat??'';
+  document.getElementById('sLon').value=s.lon??'';
+  document.getElementById('sNx').value=s.nx;
+  document.getElementById('sNy').value=s.ny;
+  document.getElementById('sArea').value=(s.area||[])[0]||'';
+  document.getElementById('sStn').value=String(s.stn);
+  document.getElementById('sBtn').textContent='저장';
+  document.getElementById('sCancel').style.display='';
+  renderSites();
+}
+/* 주소 → 위경도 + 기상청 격자 (배포된 /api/geo 중계함수 사용) */
+async function geocodeSite(){
+  const q=document.getElementById('sAddr').value.trim();
+  const out=document.getElementById('geoResult');
+  if(!q){ out.textContent='주소를 먼저 입력하세요.'; return }
+  const btn=document.getElementById('sGeo'); btn.disabled=true; btn.textContent='찾는 중…';
+  out.textContent='조회 중…';
+  try{
+    const r=await fetch('/api/geo?q='+encodeURIComponent(q));
+    const j=await r.json();
+    const rs=(j.results||[]);
+    if(!rs.length){ out.innerHTML='주소를 찾지 못했습니다. 읍·면·동까지만 넣어 다시 시도해 보세요.<br>'
+      +'<span style="color:#6b7688">예) 충남 서천군 장항읍</span>'; return }
+    applyGeo(rs[0]);
+    out.innerHTML='<b>적용됨</b> '+esc(rs[0].name)
+      + (rs.length>1 ? '<br><span style="color:#6b7688">다른 후보:</span>'
+          + rs.slice(1).map((x,i)=>`<button class="pick" onclick='applyGeoIdx(${i+1})'>${esc(x.name)} → ${x.nx},${x.ny}</button>`).join('') : '');
+    window.__geo=rs;
+  }catch(e){ out.textContent='좌표 조회 실패: '+e.message+' (배포된 주소에서만 동작합니다)' }
+  finally{ btn.disabled=false; btn.textContent='주소로 좌표 찾기' }
+}
+function applyGeo(g){
+  document.getElementById('sLat').value=g.lat.toFixed(5);
+  document.getElementById('sLon').value=g.lon.toFixed(5);
+  document.getElementById('sNx').value=g.nx;
+  document.getElementById('sNy').value=g.ny;
+}
+function applyGeoIdx(i){ const g=(window.__geo||[])[i]; if(g) applyGeo(g) }
+
+async function submitSite(){
+  const v=id=>document.getElementById(id).value.trim();
+  const rec={name:v('sName'), addr:v('sAddr'), lat:parseFloat(v('sLat')), lon:parseFloat(v('sLon')),
+             nx:parseInt(v('sNx')), ny:parseInt(v('sNy')), area:v('sArea')||v('sName'), stn:+v('sStn')};
+  if(!rec.name){ alert('거점명을 입력하세요.'); return }
+  if(isNaN(rec.nx)||isNaN(rec.ny)){ alert('격자(nx, ny)가 필요합니다.\n주소를 넣고 [주소로 좌표 찾기]를 눌러주세요.'); return }
+  if(isNaN(rec.lat)) rec.lat=null;
+  if(isNaN(rec.lon)) rec.lon=null;
+  const btn=document.getElementById('sBtn'); btn.disabled=true;
+  try{
+    if(!SEDIT && !confirm(`거점 "${rec.name}" 을 추가하면 폭염 현황표에 열이 하나 늘어납니다.\n계속할까요?`)){ return }
+    const idx=SEDIT? SITES.findIndex(x=>x.id===SEDIT) : SITES.length;
+    await saveSiteRec(SEDIT, rec, idx);
+    addLog(SEDIT?'거점수정':'거점추가',SES.name,'거점 관리',rec.name,'',`${rec.addr} / ${rec.nx},${rec.ny}`);
+    await pullSites(); save(); resetSiteForm();
+  }catch(e){ alert(e.status===401 ? permHelp() : '저장 실패: '+e.message) }
+  finally{ btn.disabled=false; renderDbTag() }
+}
+async function removeSite(id){
+  const s=SITES.find(x=>x.id===id); if(!s) return;
+  if(!confirm(`거점 "${s.name}" 을 삭제할까요?\n폭염 현황표에서 열이 사라지고, 기존 입력 내용은 표시되지 않습니다.`)) return;
+  try{
+    const r=await fetch(`${FB}/sites/${id}.json`,{method:'DELETE'});
+    if(!r.ok) throw dbErr(r.status,'/sites');
+    addLog('거점삭제',SES.name,'거점 관리',s.name,s.addr||'','');
+    await pullSites(); save(); resetSiteForm();
+  }catch(e){ alert(e.status===401 ? permHelp() : '삭제 실패: '+e.message) }
+  renderDbTag();
+}
+
+/* ── 사용자 관리 ─────────────────────────────────────────── */
+let UEDIT=null;
+function resetUserForm(){
+  UEDIT=null;
+  document.getElementById('uName').value='';
+  document.getElementById('uLevel').value='user';
+  document.getElementById('uBtn').textContent='+ 추가';
+  document.getElementById('uCancel').style.display='none';
+  renderUsers();
+}
+function renderUsers(){
+  document.getElementById('usrCnt').textContent=`등록 ${USERS.length}명`;
+  const order=id=>{const i=LOGIN_LIST.findIndex(s=>s.id===id); return i<0?99:i};
+  const list=USERS.slice().sort((a,b)=>order(a.site)-order(b.site)||a.name.localeCompare(b.name,'ko'));
+  document.getElementById('usrList').innerHTML = list.length
+   ? `<table><thead><tr><th style="width:24%">소속</th><th style="width:26%">이름</th>
+      <th style="width:22%">권한</th><th style="width:28%"></th></tr></thead><tbody>`
+     + list.map(u=>`<tr class="${UEDIT===u.id?'editing':''}">
+        <td>${esc(siteLabel(u.site))}</td><td><b>${esc(u.name)}</b></td>
+        <td><span class="lv ${u.level}">${u.level==='manager'?'관리자':'일반사용자'}</span></td>
+        <td class="act" style="text-align:right">
+          <button onclick="editUser('${u.id}')">수정</button>
+          <button class="del" onclick="removeUser('${u.id}')">삭제</button></td></tr>`).join('')
+     + `</tbody></table>`
+   : `<div style="padding:22px;text-align:center;color:var(--mut)">등록된 사용자가 없습니다.<br>
+      위에서 소속·이름·권한을 지정해 추가하세요.</div>`;
+}
+function siteLabel(id){ return (LOGIN_LIST.find(s=>s.id===id)||{}).name || id }
+
+async function submitUser(){
+  const site=document.getElementById('uSite').value;
+  const name=document.getElementById('uName').value.trim();
+  const level=document.getElementById('uLevel').value;
+  if(!name){ alert('이름을 입력하세요.'); return }
+  const dup=USERS.find(u=>u.site===site&&u.name===name&&u.id!==UEDIT);
+  if(dup){ alert('같은 소속에 같은 이름이 이미 있습니다.'); return }
+  const btn=document.getElementById('uBtn'); btn.disabled=true;
+  try{
+    if(UEDIT){
+      const before=USERS.find(u=>u.id===UEDIT);
+      await saveUser({id:UEDIT, site, name, level});
+      addLog('사용자수정',SES.name,'사용자 관리',`${siteLabel(site)} ${name}`,
+             before?`${siteLabel(before.site)} ${before.name} / ${before.level}`:'', `${level}`);
+    }else{
+      await saveUser({site, name, level});
+      addLog('사용자추가',SES.name,'사용자 관리',`${siteLabel(site)} ${name}`,'',level);
+    }
+    save(); resetUserForm();
+  }catch(e){ alert(e.status===401 ? permHelp() : '저장 실패: '+e.message) }
+  finally{ btn.disabled=false; renderDbTag() }
+}
+function editUser(id){
+  const u=USERS.find(x=>x.id===id); if(!u) return;
+  UEDIT=id;
+  document.getElementById('uSite').value=u.site;
+  document.getElementById('uName').value=u.name;
+  document.getElementById('uLevel').value=u.level;
+  document.getElementById('uBtn').textContent='저장';
+  document.getElementById('uCancel').style.display='';
+  renderUsers();
+  document.getElementById('uName').focus();
+}
+async function removeUser(id){
+  const u=USERS.find(x=>x.id===id); if(!u) return;
+  if(!confirm(`${siteLabel(u.site)} ${u.name} 님을 삭제할까요?\n삭제 후에는 로그인할 수 없습니다.`)) return;
+  try{
+    await deleteUser(id);
+    addLog('사용자삭제',SES.name,'사용자 관리',`${siteLabel(u.site)} ${u.name}`,u.level,'');
+    save(); resetUserForm();
+  }catch(e){ alert(e.status===401 ? permHelp() : '삭제 실패: '+e.message) }
+  renderDbTag();
+}
 
 /* ════════════════════════════════════════════════════════════
    9. 로그
@@ -1025,7 +1660,7 @@ function colLetter(n){let s='';while(n>0){const m=(n-1)%26;s=String.fromCharCode
 function buildSheetXml(){
   const d=day(VIEW);
   const dt=new Date(VIEW+'T00:00:00');
-  const head=`${dt.getFullYear()}년 ${dt.getMonth()+1}월 ${dt.getDate()}일 (${DOW[dt.getDay()]}) 14시 기준`;
+  const head=headText(VIEW, d.baseAt);
   const N=SITES.length, last=colLetter(2+N);       // B(2) ~ L(12)
   const rows=[];
   const cellS=(ref,st,v,num)=>v===''||v==null
@@ -1147,17 +1782,56 @@ async function toXlsx(){
 /* ════════════════════════════════════════════════════════════
    11. 구동
    ════════════════════════════════════════════════════════════ */
-async function refreshNow(){
-  const r=await collect();
-  const t=today();
-  if(DB[t]&&!DB[t].locked){ applyLive(DB[t]); save() }   // 오늘 미확정이면 실황 반영
-  guard(renderTop,'상단'); if(VIEW) guard(renderTable,'표');
-  if(r.fail) console.warn(`${r.fail}개 거점 조회 실패`);
+let BUSY=false, TICK=null;
+/* 새로고침 — 날씨를 다시 받아오고, 오늘 표의 기준시각·기상값을 현재 시점으로 갱신 */
+async function refreshNow(silent){
+  if(BUSY) return;
+  BUSY=true;
+  const btn=document.getElementById('btnRef');
+  if(!silent && btn){
+    const t0=Date.now();
+    const paint=()=>{ btn.textContent='로딩중... '+((Date.now()-t0)/1000).toFixed(1)+'초' };
+    paint();
+    clearInterval(TICK); TICK=setInterval(paint,100);
+    btn.classList.add('loading'); btn.disabled=true;
+    document.body.classList.add('busy');
+  }
+  try{
+    await rollover();                       // 날짜가 바뀌었으면 먼저 정리
+    await ensureToday();
+    const r=await collect();
+    stampToday();                           // 기상값 + 기준시각 갱신 후 공유
+    guard(renderTop,'상단'); guard(renderDates,'날짜목록');
+    if(VIEW) guard(renderTable,'표');
+    renderDbTag();
+    const el=document.getElementById('refTime');
+    if(el) el.textContent='최근 갱신 '+stampNow().split(' ')[1];
+    if(r.fail) console.warn(`${r.fail}개 거점 조회 실패`);
+  }catch(e){ console.error('새로고침', e) }
+  finally{
+    BUSY=false;
+    clearInterval(TICK); TICK=null;
+    if(!silent && btn){ btn.textContent='↻ 새로고침'; btn.classList.remove('loading');
+                        btn.disabled=false; document.body.classList.remove('busy') }
+  }
 }
-async function lock14(){
-  if(!(SES.role==='hq'||isAll())) return;
-  if(!confirm(`${VIEW} 14시 기준으로 기상현황·체감온도를 확정할까요?`)) return;
-  await captureBase(VIEW,false); guard(renderTable,'표');
+
+/* ── 자정 마감 ────────────────────────────────────────────────
+   날짜가 바뀌면 전날 표를 그대로 공용 저장소에 남기고(열람 가능),
+   오늘자 새 표를 빈 상태로 준비한다. 사용자가 아무것도 안 해도 자동. */
+let LASTDAY=null;
+async function rollover(){
+  const t=today();
+  if(LASTDAY===null){ LASTDAY=t; return false }
+  if(LASTDAY===t) return false;
+  const prev=LASTDAY;
+  try{ await pushWx(prev, day(prev)) }catch(e){}      // 전날 최종본 확정 저장
+  addLog('자동','시스템','-','일자 마감', prev, t);
+  day(t);                                             // 오늘자 빈 표 생성
+  LASTDAY=t;
+  if(VIEW===prev) VIEW=t;                             // 화면도 오늘로 전환
+  save();
+  return true;
 }
 
 async function start(){
@@ -1169,24 +1843,22 @@ async function start(){
     : SES.role==='hq' ? `국내사업부장 · ${SES.name}`
     : `${siteName(SES.site)} · ${SES.name}`;
   document.getElementById('btnLog').style.display = canViewLog()?'':'none';
-  VIEW=today();
+  document.getElementById('btnUsr').style.display = isRoot()?'':'none';
+  VIEW=today(); LASTDAY=VIEW;
   await pullDates();                      // 공용 저장소의 일자 목록
   await pullDay(VIEW);                    // 다른 거점이 이미 입력한 내용 받아오기
-  await collect();
-  await ensureToday();
-  guard(renderTop,'상단'); guard(renderDates,'날짜목록'); guard(renderTable,'표');
-  renderDbTag();
-  // 14시 자동 확정 감시 (1분 주기)
+  guard(renderDates,'날짜목록'); guard(renderTable,'표');
+  await refreshNow();                     // 로그인 직후 자동 갱신 (버튼에 경과시간 표시)
+
+  // 자정 감시 (30초 주기) — 날짜가 바뀌면 전날 마감 + 새 표 준비
   setInterval(async()=>{
-    const t=today();
-    day(t);
-    if(!DB[t].locked && new Date().getHours()>=14){
-      await collect(); await captureBase(t,true);
-      if(VIEW===t){guard(renderDates,'날짜목록');guard(renderTable,'표')}
+    if(await rollover()){
+      await collect(); stampToday();
+      guard(renderTop,'상단'); guard(renderDates,'날짜목록'); guard(renderTable,'표');
     }
-  },60000);
+  },30000);
   setInterval(syncTick,20000);            // 20초마다 다른 거점 입력 반영
-  setInterval(refreshNow,600000);         // 10분마다 현재 기상 갱신
+  setInterval(()=>refreshNow(true),600000); // 10분마다 조용히 기상 갱신
 }
 
 (function init(){
@@ -1201,7 +1873,24 @@ async function start(){
   showAdm(false);
   document.getElementById('mbg').addEventListener('click',e=>{if(e.target.id==='mbg')closeM()});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
-  if(SES) start();
+
+  USERS=S.g(K.usr,[]);                       // 마지막 명부로 먼저 화면 열고
+  const cached=S.g('heatSITES',null);        // 마지막 거점 정의
+  if(Array.isArray(cached)&&cached.length){ SITES.length=0; cached.forEach(x=>SITES.push(x)); rebuildDerived() }
+  (async()=>{
+    await pullSites();                       // 공용 저장소의 거점 정의
+    await pullUsers();                       // 공용 저장소에서 최신 명부 갱신
+    if(SES){
+      // 저장된 세션도 명부와 대조 — 삭제·변경된 사용자는 재로그인
+      if(SES.role!=='admin' && SES.role!=='super' && !findUser(SES.site,SES.name)){
+        SES=null; try{localStorage.removeItem(K.ses)}catch(e){}
+      }
+    }
+    if(SES) start();
+    else if(!USERS.length)
+      document.getElementById('lgErr').innerHTML=
+        '등록된 사용자가 없습니다.<br>최고관리자 접속 후 사용자를 등록하세요.';
+  })();
 })();
 </script>
 </body>
