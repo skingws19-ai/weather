@@ -127,6 +127,14 @@ body.busy .panel,body.busy #sheet{opacity:.55;pointer-events:none;transition:opa
 .etc-box.edit{cursor:pointer;background:#fffdf3}
 .etc-box.edit:hover{background:#fff6d6;outline:2px solid #e8c85a;outline-offset:-2px}
 .etc-box.editing{background:#fff;outline:2px solid var(--navy);outline-offset:-2px}
+/* 일괄 입력·삭제 버튼 */
+.bulk{display:flex;gap:6px;margin-left:14px}
+.bulk button{font-size:12px;font-weight:700;padding:5px 12px;border-radius:6px;
+  background:#e8eef8;color:var(--navy);border:1px solid #c3d2e8}
+.bulk button:hover{background:#d8e3f4}
+.bulk button.del{background:#fdecea;color:var(--red);border-color:#f0c9c4}
+.bulk button.del:hover{background:#f9d9d5}
+
 /* 범례 — 폭염특보 배지 색 설명 */
 .legend{display:flex;align-items:center;gap:5px;font-size:13px;color:#44506a;font-weight:600}
 .legend b{font-weight:800;color:var(--navy);margin-right:4px;font-size:13px}
@@ -227,6 +235,10 @@ body.busy .panel,body.busy #sheet{opacity:.55;pointer-events:none;transition:opa
 
     <div class="panel">
       <div class="p-hd big-hd"><span>거점별 현재 기상 · 체감온도</span>
+        <span class="bulk no-copy" id="bulkBtns" style="display:none">
+          <button onclick="bulkFill()">전체입력 (특이사항 없음)</button>
+          <button class="del" onclick="bulkClear()">전체삭제</button>
+        </span>
         <span class="sp"></span>
         <span class="legend">
           <b>폭염특보</b>
@@ -916,6 +928,7 @@ function renderBoard(){
   eb.innerHTML = d.etc.text ? esc(d.etc.text) : `<span class="empty">${ed?'클릭하여 입력':'—'}</span>`;
 
   document.getElementById('btnFix').style.display = ed?'':'none';
+  document.getElementById('bulkBtns').style.display = ed?'':'none';
   document.getElementById('tip').innerHTML = ed
     ? `<b>입력 가능</b> — 칸을 클릭해 바로 입력하세요. 기준시각 <b>${esc(d.baseAt||'—')}</b>`
     : `조회 전용 — 상단에 사용자 코드를 넣으면 입력할 수 있습니다. 기준시각 <b>${esc(d.baseAt||'—')}</b>`;
@@ -954,6 +967,44 @@ function beginEdit(siteId, key, el){
     else if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); finish(true) }
   };
 }
+/* ── 일괄 입력 / 일괄 삭제 ─────────────────────────────────
+   30개 칸을 하나씩 누르는 수고를 덜기 위한 기능.
+   기타사항은 성격이 달라 '전체입력' 대상에서 빼고, '전체삭제' 에만 포함한다. */
+const NO_ISSUE='특이사항 없음';
+
+async function bulkApply(value, label){
+  if(!canEdit()){ alert('사용자 코드를 먼저 입력하세요.'); return }
+  flushEdit();
+  const d=day(VIEW), stamp=nowStamp();
+  const filled=SITES.filter(s=>{
+    const n=d.notes[s.id]||{}; return n.worker||n.facility||n.transport;
+  }).length;
+  let msg = value===null
+    ? `전 거점의 입력 내용을 지웁니다.\n기타사항도 함께 지워집니다.\n\n계속할까요?`
+    : `전 거점의 근로자 · 제품(시설) · 운송 칸을\n"${value}" 으로 채웁니다.\n\n계속할까요?`;
+  if(filled) msg = `이미 입력된 거점이 ${filled}개소 있습니다. 덮어씁니다.\n\n`+msg;
+  if(!confirm(msg)) return;
+
+  const v = value===null ? '' : value;
+  SITES.forEach(s=>{ d.notes[s.id]={worker:v, facility:v, transport:v, by:WHO, at:stamp} });
+  if(value===null) d.etc={text:'', by:WHO, at:stamp};
+  save();
+  guard(renderBoard,'거점 현황');
+
+  try{
+    await fbSend(`/days/${VIEW}/notes`, d.notes, 'PUT');
+    if(value===null) await fbSend(`/days/${VIEW}/etc`, d.etc, 'PUT');
+    DBOK=true;
+  }catch(e){
+    if(e.status!==401) DBOK=false;
+    alert(e.status===401 ? permHelp() : '공용 저장소 반영 실패: '+e.message);
+  }
+  addLog(label, WHO, '전 거점', '일괄', '', value===null?'(삭제)':value);
+  renderDbTag();
+}
+function bulkFill(){  return bulkApply(NO_ISSUE, '일괄입력') }
+function bulkClear(){ return bulkApply(null,     '일괄삭제') }
+
 /* 열려 있는 입력창의 값을 즉시 반영 (확정 직전에 호출) */
 function flushEdit(){
   const ta=document.querySelector('.in-ed');
@@ -1219,7 +1270,10 @@ function dl(blob,name){const a=document.createElement('a');a.href=URL.createObje
    10. 캡쳐 / 엑셀
    ════════════════════════════════════════════════════════════ */
 function shot(){                       // 폭염현황 + 거점별 현재 기상 → canvas
-  return html2canvas(document.getElementById('capture'),{scale:2,backgroundColor:'#eef1f6'});
+  return html2canvas(document.getElementById('capture'),{
+    scale:2, backgroundColor:'#eef1f6',
+    ignoreElements: el => el.classList && el.classList.contains('no-copy')   // 버튼은 이미지에서 제외
+  });
 }
 function flash(id,txt,ms){             // 버튼 피드백
   const b=document.getElementById(id), o=b.textContent;
