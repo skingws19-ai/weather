@@ -17,10 +17,13 @@ export default async function handler(req, res) {
   const url = 'https://apis.data.go.kr/1360000/' + path + '?' + qs;
 
   try {
-    const r = await fetch(url, { headers: { Accept: 'application/json' } });
+    const r = await fetch(url, { headers: { Accept: 'application/json' }, cache: 'no-store' });
     const text = await r.text();
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+    // 캐시 금지 — 새로고침을 눌렀는데 예전 값이 그대로 나오는 것을 막는다
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    res.setHeader('CDN-Cache-Control', 'no-store');
+    res.setHeader('Vercel-CDN-Cache-Control', 'no-store');
     return res.status(200).send(text);
   } catch (e) {
     return res.status(502).json({ proxyError: String(e.message || e) });

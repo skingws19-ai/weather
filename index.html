@@ -343,7 +343,7 @@ let DB={}, LOG=[], SES=null;
 let CFG={key:API_KEY, proxy:API_PROXY, mode:'live'};
 let NETFAIL=null, NETFAIL_MSG='';        // 실시간 조회 실패 사유
 let VIEW=null;              // 현재 조회중인 날짜 YYYY-MM-DD
-let LIVE={sites:{},pending:[],at:null};   // 실시간(현재) 기상
+let LIVE={sites:{},pending:[],at:null,obsAt:null};   // 실시간(현재) 기상
 
 const S={g:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
          s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -383,27 +383,37 @@ function heatAlert(f){ return f>=38?'중대경보':f>=35?'경보':f>=33?'주의�
    3. 기상청 API
    ════════════════════════════════════════════════════════════ */
 const pad=n=>String(n).padStart(2,'0');
+/* 모든 날짜·시각 판단은 한국시간(KST) 기준으로 한다.
+   PC 시간대가 달라도 자정 자동저장과 기상청 조회 시각이 어긋나지 않게. */
+function kstNow(){
+  const d=new Date();
+  return new Date(d.getTime() + (d.getTimezoneOffset() + 9*60) * 60000);
+}
 const ymd=d=>d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
 const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const DOW=['일','월','화','수','목','금','토'];
 
 const KMA={
+  /* 매 호출마다 _t 를 붙여 중간 캐시(CDN·브라우저)를 확실히 통과시킨다.
+     이게 없으면 새로고침을 눌러도 5분 전 응답이 그대로 돌아온다. */
   url(p,q){
-    // 중계함수 경유 : 인증키는 서버가 붙이므로 브라우저에 노출되지 않음
+    const bust={_t:Date.now()};
     if(CFG.proxy) return `${CFG.proxy}?path=${encodeURIComponent(p)}&`
-                        + new URLSearchParams({dataType:'JSON',...q});
+                        + new URLSearchParams({dataType:'JSON',...q,...bust});
     return `https://apis.data.go.kr/1360000/${p}?`
-         + new URLSearchParams({serviceKey:CFG.key,dataType:'JSON',...q});
+         + new URLSearchParams({serviceKey:CFG.key,dataType:'JSON',...q,...bust});
   },
+  get(u){ return fetch(u,{cache:'no-store'}) },
   /* 초단기실황 — 정시 관측이 약 40분 뒤 공개된다.
      한 번 성공한 기준시각을 기억해 나머지 거점은 1회 호출로 끝낸다. */
   _ncstAt:null,
   async _ncstTry(nx,ny,d){
-    const r=await fetch(this.url('VilageFcstInfoService_2.0/getUltraSrtNcst',
+    const r=await this.get(this.url('VilageFcstInfoService_2.0/getUltraSrtNcst',
       {pageNo:1,numOfRows:20,base_date:ymd(d),base_time:pad(d.getHours())+'00',nx,ny}));
     const j=await r.json(), it=j?.response?.body?.items?.item;
     if(!it||!it.length) return null;
     const o={}; it.forEach(x=>o[x.category]=parseFloat(x.obsrValue));
+    o._at=`${pad(d.getHours())}:00`;              // 실제 관측시각
     return o;
   },
   async ncst(nx,ny,at){
@@ -411,7 +421,7 @@ const KMA={
       const o=await this._ncstTry(nx,ny,this._ncstAt);
       if(o) return o;
     }
-    const base=at?new Date(at):new Date(Date.now()-40*60000);
+    const base=at?new Date(at):new Date(kstNow().getTime()-40*60000);
     let last='';
     for(let back=0;back<4;back++){
       const d=new Date(base.getTime()-back*3600e3);
@@ -432,8 +442,8 @@ const KMA={
     const j=await r.json(); return j?.response?.body?.items?.item||[];
   },
   async sky(nx,ny){                                      // 초단기예보 SKY
-    const d=new Date(Date.now()-50*60000);
-    const r=await fetch(this.url('VilageFcstInfoService_2.0/getUltraSrtFcst',
+    const d=new Date(kstNow().getTime()-50*60000);
+    const r=await this.get(this.url('VilageFcstInfoService_2.0/getUltraSrtFcst',
       {pageNo:1,numOfRows:30,base_date:ymd(d),base_time:pad(d.getHours())+'30',nx,ny}));
     const j=await r.json(), it=j?.response?.body?.items?.item||[];
     const v=it.find(x=>x.category==='SKY'); return v?+v.fcstValue:1;
@@ -444,13 +454,13 @@ const KMA={
         발표시각만 보고 최신 것을 고르면 아직 오지 않은 특보를 현재 상태로 표시하게 된다.
         → t5(발효시각)가 이미 지난 것들 중에서 가장 나중에 발효된 것을 채택한다. */
   async warnMsg(stn){
-    const t=new Date(), f=new Date(Date.now()-72*3600e3);
-    const r=await fetch(this.url('WthrWrnInfoService/getWthrWrnMsg',
+    const t=kstNow(), f=new Date(kstNow().getTime()-72*3600e3);
+    const r=await this.get(this.url('WthrWrnInfoService/getWthrWrnMsg',
       {pageNo:1,numOfRows:20,stnId:stn,fromTmFc:ymd(f),toTmFc:ymd(t)}));
     const j=await r.json();
     const items=j?.response?.body?.items?.item||[];
     if(!items.length) return null;
-    const now=+(`${ymd(t)}${pad(t.getHours())}${pad(t.getMinutes())}`);
+    const now=+(`${ymd(t)}${pad(t.getHours())}${pad(t.getMinutes())}`);   // KST
     const eff=(i)=>+(i.t5||i.tmFc||0);
     const live=items.filter(i=>eff(i)<=now);
     const future=items.filter(i=>eff(i)>now).sort((a,b)=>eff(a)-eff(b))[0]||null;
@@ -521,11 +531,11 @@ const DEMO={
 function fillDemo(at){
   WX_SITES.forEach(s=>{const d=DEMO[s.id]||{sky:3,pty:0,ta:31.0,rh:70,wsd:2.0};
     LIVE.sites[s.id]={...d,feels:feels(d.ta,d.rh,d.wsd),alert:heatAlert(feels(d.ta,d.rh,d.wsd))}});
-  LIVE.at=at; LIVE.pending=[];
+  LIVE.at=at; LIVE.pending=[]; LIVE.obsAt=null;
 }
 
 async function collect(){
-  const at=new Date();
+  const at=kstNow();
   NETFAIL=null; KMA._ncstAt=null;
   if(CFG.mode!=='live'||!CFG.key){ fillDemo(at); return {ok:0,fail:0,demo:true} }
   let ok=0,fail=0, lastErr='';
@@ -543,6 +553,7 @@ async function collect(){
     try{
       const [n,sk]=await Promise.all([KMA.ncst(nx,ny), KMA.sky(nx,ny).catch(()=>1)]);
       const f=feels(n.T1H,n.REH,n.WSD);
+      if(n._at) LIVE.obsAt=n._at;                 // 실제 관측시각 (매시 정시)
       mine.forEach(s=>{ LIVE.sites[s.id]={sky:sk, pty:n.PTY||0, ta:n.T1H, rh:n.REH,
                                           wsd:n.WSD, feels:f, alert:heatAlert(f)} });
       ok+=mine.length;
@@ -716,7 +727,7 @@ function renderDbTag(){
                  : DBOK===false ? '● 공용 저장소 끊김 (이 브라우저에만 저장)' : '';
   el.style.color = DBOK===true ? '#7fd6a4' : '#f0b7ae';
 }
-function today(){ return iso(new Date()) }
+function today(){ return iso(kstNow()) }
 
 /* 현재 실황을 그날 표에 반영 */
 function applyLive(d){
@@ -731,7 +742,7 @@ async function ensureToday(){
 }
 /* 표 헤더에 쓰는 기준시각 문자열 */
 function stampNow(){
-  const n=new Date();
+  const n=kstNow();
   return `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())} ${pad(n.getHours())}:${pad(n.getMinutes())}`;
 }
 function headText(dstr, baseAt){
@@ -816,8 +827,15 @@ function guard(fn,label){
 }
 
 function renderTop(){
-  const t=LIVE.at?`${LIVE.at.getFullYear()}.${pad(LIVE.at.getMonth()+1)}.${pad(LIVE.at.getDate())} ${LIVE.at.getHours()}시 기준`:'';
+  const t=LIVE.at?`${LIVE.at.getFullYear()}.${pad(LIVE.at.getMonth()+1)}.${pad(LIVE.at.getDate())} ${LIVE.at.getHours()}시 기준`:'';   // LIVE.at 은 KST
   document.getElementById('sumTitle').textContent='폭염현황'+(t?`  (${t})`:'');
+  const rt=document.getElementById('refTime');
+  if(rt && LIVE.at){
+    const hm=`${pad(LIVE.at.getHours())}:${pad(LIVE.at.getMinutes())}`;
+    rt.innerHTML = LIVE.obsAt
+      ? `기상청 관측 <b>${LIVE.obsAt}</b> · 갱신 ${hm}`
+      : `갱신 ${hm}`;
+  }
 
   // 실시간 조회 실패 안내
   const nb=document.getElementById('netBar');
@@ -975,7 +993,7 @@ let HIST=[];
 function buildSnapshot(by, dstr){
   const target = dstr || VIEW;
   const d = day(target);
-  const now = new Date();
+  const now = kstNow();
   const live = !dstr;                                  // 오늘이면 실시간 기상값 사용
   return {
     savedAt: `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`,
@@ -1015,33 +1033,53 @@ async function clearInputs(dstr){
 function prevDate(dstr){
   const d=new Date(dstr+'T00:00:00'); d.setDate(d.getDate()-1); return iso(d);
 }
+let AUTO_TRIED={};                                   // 이번 세션에서 확인한 일자
+async function autoSaveDay(dstr){
+  if(AUTO_TRIED[dstr]) return false;
+  // ① 이미 처리된 일자인지 먼저 확인 (가장 싼 검사)
+  try{
+    const flag=await fbGet(`/autofix/${dstr}`);
+    if(flag){ AUTO_TRIED[dstr]=1; return false }
+  }catch(e){
+    if(e.status===401){ AUTO_TRIED[dstr]=1; return false }
+    const seen=S.g('heatAutoFix',{});
+    if(seen[dstr]){ AUTO_TRIED[dstr]=1; return false }
+  }
+  // ② 그 일자의 실제 내용을 공용 저장소에서 가져온다.
+  //    (목록만 받아온 상태에서는 내용이 비어 있어 그냥 넘어가 버린다)
+  await pullDay(dstr);
+  const d=DB[dstr];
+  const hasAny = d && ( SITES.some(x=>{
+        const n=d.notes?.[x.id]||{};
+        return n.worker||n.facility||n.transport;
+      }) || (d.etc && d.etc.text) );
+  if(!hasAny){ AUTO_TRIED[dstr]=1; return false }       // 기입된 게 없으면 저장할 것도 없음
+
+  // ③ 표식을 먼저 남겨 다른 PC와 중복 저장되지 않게 한다
+  try{ await fbSend(`/autofix/${dstr}`, {at:stampNow(), by:'자동(00시)'}, 'PUT') }
+  catch(e){ const seen=S.g('heatAutoFix',{}); seen[dstr]=1; S.s('heatAutoFix',seen) }
+
+  const rec=buildSnapshot('자동(00시)', dstr);
+  try{ await fbPush('/confirmed', rec) }
+  catch(e){ console.warn('자동저장 실패', e.message); AUTO_TRIED[dstr]=1; return false }
+  addLog('자동저장','시스템','폭염현황',dstr,'',rec.savedAt);
+  await clearInputs(dstr);                              // 자동저장 후에만 초기화
+  AUTO_TRIED[dstr]=1;
+  return true;
+}
+
+/* 매일 한국시간 00:00 기준 자동저장.
+   자정에 화면이 안 켜져 있었어도, 다음 접속 때 밀린 날짜를 찾아 처리한다.
+   오늘 입력 중인 값은 대상이 아니다. */
 async function autoSaveMidnight(){
   const t=today();
-  const prev=prevDate(t);
-  // 전일자에 아무 기록도 없으면 건너뜀
-  const pd=DB[prev];
-  const hasAny = pd && (SITES.some(s=>{
-      const n=pd.notes?.[s.id]||{};
-      return n.worker||n.facility||n.transport;
-    }) || (pd.etc&&pd.etc.text) || pd.baseAt);
-  if(!pd || !hasAny) return false;
-
-  try{
-    const flag=await fbGet(`/autofix/${prev}`);
-    if(flag) return false;                              // 이미 처리됨
-    await fbSend(`/autofix/${prev}`, {at:stampNow(), by:'자동(00시)'}, 'PUT');
-  }catch(e){
-    if(e.status===401) return false;
-    const seen=S.g('heatAutoFix',{});
-    if(seen[prev]) return false;
-    seen[prev]=1; S.s('heatAutoFix',seen);
+  let done=false;
+  for(let i=1;i<=7;i++){                                // 최근 7일 중 미저장분
+    const d=new Date(t+'T00:00:00'); d.setDate(d.getDate()-i);
+    if(await autoSaveDay(iso(d))) done=true;
   }
-  const rec=buildSnapshot('자동(00시)', prev);
-  try{ await fbPush('/confirmed', rec) }catch(e){}
-  addLog('자동저장','시스템','폭염현황',prev,'',rec.savedAt);
-  await clearInputs(prev);                              // 자동저장 후에만 초기화
-  await loadHist();
-  return true;
+  if(done){ await loadHist(); guard(renderTop,'상단') }
+  return done;
 }
 
 async function confirmBoard(){
@@ -1165,7 +1203,7 @@ function resetLocal(){
 
 /* ── 공통 유틸 ────────────────────────────────────────────── */
 function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
-function nowStamp(){const d=new Date();
+function nowStamp(){const d=kstNow();
   return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`}
 
 /* ── 변경 이력은 공용 저장소에만 남긴다 (화면 표시 없음) ── */
@@ -1249,9 +1287,7 @@ async function refreshNow(silent){
     stampToday();                           // 기상값 + 기준시각 갱신 후 공유
     guard(renderTop,'상단'); 
     if(VIEW) guard(renderBoard,'거점 현황');
-    renderDbTag();
-    const el=document.getElementById('refTime');
-    if(el) el.textContent='최근 갱신 '+stampNow().split(' ')[1];
+    renderDbTag();                            // 갱신·관측시각 표시는 renderTop 이 담당
     if(r.fail) console.warn(`${r.fail}개 거점 조회 실패`);
   }catch(e){ console.error('새로고침', e) }
   finally{
@@ -1275,6 +1311,7 @@ async function rollover(){
   addLog('자동','시스템','-','일자 마감', prev, t);
   day(t);                                             // 오늘자 빈 표 생성
   LASTDAY=t;
+  AUTO_TRIED={};                                      // 날짜가 바뀌었으니 다시 확인
   if(VIEW===prev) VIEW=t;                             // 화면도 오늘로 전환
   save();
   return true;

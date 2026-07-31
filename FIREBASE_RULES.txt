@@ -4,18 +4,20 @@ Firebase 콘솔 → Realtime Database → [규칙] 탭 → 전체 선택 후 붙
 
 {
   "rules": {
-    "days":  { ".read": true, ".write": true },
-    "logs":  { ".read": true, ".write": true },
-    "users": { ".read": true, ".write": true },
-    "sites": { ".read": true, ".write": true }
+    "days":      { ".read": true, ".write": true },
+    "logs":      { ".read": true, ".write": true },
+    "confirmed": { ".read": true, ".write": true },
+    "autofix":   { ".read": true, ".write": true }
   }
 }
 
 ────────────────────────────────────────────────
-이전에 안내드린 규칙에는 users / sites 가 빠져 있어
-사용자 관리와 거점 관리가 401 Permission denied 로 막혔습니다.
-위 규칙으로 교체하면 해결됩니다.
+days      : 일자별 입력 내용
+logs      : 변경 이력 (화면 표시 없음, 기록만)
+confirmed : 폭염현황 확정 스냅샷 (수동 + 00시 자동)
+autofix   : 00시 자동저장 중복 방지 표식
+
+autofix 가 없으면 00시 자동저장이 여러 PC 에서 중복될 수 있습니다.
+(기능 자체는 동작하며, 각 브라우저 기준으로 하루 한 번만 실행됩니다)
 
 ※ 이 규칙은 주소를 아는 사람 누구나 읽고 쓸 수 있는 상태입니다.
-   사내 전용으로 쓰다가 더 잠그고 싶으면 Firebase 익명 인증을 켜고
-   ".write" 를 "auth != null" 로 바꾸면 됩니다.
