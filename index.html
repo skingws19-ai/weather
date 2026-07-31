@@ -127,6 +127,12 @@ body.busy .panel,body.busy #sheet{opacity:.55;pointer-events:none;transition:opa
 .etc-box.edit{cursor:pointer;background:#fffdf3}
 .etc-box.edit:hover{background:#fff6d6;outline:2px solid #e8c85a;outline-offset:-2px}
 .etc-box.editing{background:#fff;outline:2px solid var(--navy);outline-offset:-2px}
+/* 특보 출처 표기 */
+.nat .big .src{font-size:13px;color:#55617a;font-weight:600;padding-top:4px}
+.nat .big .src b{font-size:13px}
+.nat .big .warn{color:#b7791f;font-weight:700}
+.st .al .est{font-size:9.5px;font-weight:700;margin-left:4px;opacity:.75}
+
 /* 일괄 입력·삭제 버튼 */
 .bulk{display:flex;gap:6px;margin-left:14px}
 .bulk button{font-size:12px;font-weight:700;padding:5px 12px;border-radius:6px;
@@ -290,39 +296,36 @@ body.busy .panel,body.busy #sheet{opacity:.55;pointer-events:none;transition:opa
 //  nx,ny : 기상청 동네예보 격자좌표 — 위 주소를 지오코딩해 LCC 변환한 값
 //  stn   : 기상특보 발표관서 / area : 특보문 시·군명 / wide : 광역명
 const SITES=[
- {id:'gunsan',   name:'군산',     addr:'전북 군산시 서해로 194',
-  lat:35.97328, lon:126.57321, nx:53, ny:92,  stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도'],
-  regLand:'11F10000', regTa:'11F10501'},                                    // 전북 / 군산
- {id:'janghang', name:'장항',     addr:'충남 서천군 장항읍 장산로 149',
-  // 한솔제지 장항공장 실좌표 (기상청 날씨누리 행정동 4477025000 기준점과 동일 격자)
-  lat:36.01128, lon:126.67965, nx:55, ny:93,  stn:133, area:['서천'], wide:['충남','충청남도'],
-  regLand:'11C20000', regTa:'11C20201'},                                    // 대전·충남 / 보령
- {id:'daejeon',  name:'대전',     addr:'대전 대덕구 신일서로68번길 50',
+ {id:'gunsan',   name:'군산',     addr:'군산항 5부두 · 전북 군산시 소룡동 (서해로 194)',
+  lat:35.97530, lon:126.59046, nx:53, ny:92,  stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도'],
+  regLand:'11F10000', regTa:'11F10501'},
+ {id:'janghang', name:'장항',     addr:'한솔제지 장항공장 · 충남 서천군 장항읍',
+  lat:36.01051, lon:126.67883, nx:55, ny:93,  stn:133, area:['서천'], wide:['충남','충청남도'],
+  regLand:'11C20000', regTa:'11C20201'},
+ {id:'daejeon',  name:'대전',     addr:'한솔제지 대전공장 · 대전 대덕구 신일동',
   lat:36.43465, lon:127.40118, nx:68, ny:102, stn:133, area:['대전'], wide:['대전'],
-  regLand:'11C20000', regTa:'11C20401'},                                    // 대전·충남 / 대전
- {id:'cheonan',  name:'천안',     addr:'충남 천안시 동남구 광덕면 세종로 4186',
-  // 광덕면 행정리 40-1 실좌표. 면사무소 기준이면 격자가 62,108 로 어긋난다.
+  regLand:'11C20000', regTa:'11C20401'},
+ {id:'cheonan',  name:'천안',     addr:'한솔제지 천안공장 · 충남 천안시 동남구 광덕면',
   lat:36.68945, lon:127.16029, nx:63, ny:108, stn:133, area:['천안'], wide:['충남','충청남도'],
-  regLand:'11C20000', regTa:'11C20101'},                                    // 대전·충남 / 천안
- {id:'sintanjin',name:'신탄진',   addr:'대전 대덕구 신일서로126번길 60',
+  regLand:'11C20000', regTa:'11C20101'},
+ {id:'sintanjin',name:'신탄진',   addr:'한솔제지 신탄진공장 · 대전 대덕구 신일동',
   lat:36.43321, lon:127.40752, nx:68, ny:102, stn:133, area:['대전'], wide:['대전'],
   regLand:'11C20000', regTa:'11C20401'},
- {id:'busanNP',  name:'부산신항', addr:'부산 강서구 명지국제2로 16',
-  lat:35.09222, lon:128.90858, nx:95, ny:74,  stn:159, area:['부산'], wide:['부산'],
-  regLand:'11H20000', regTa:'11H20201'},                                    // 부산·경남 / 부산
- {id:'stjCY',    name:'신탄진 CY',addr:'대전 대덕구 평촌동 24-3',
-  // 신탄진 공장과 별도 위치(평촌동). 2.3km 떨어져 있으나 같은 격자.
+ {id:'busanNP',  name:'부산신항', addr:'부산신항국제터미널 · 부산 강서구 성북동 (신항남로 330)',
+  lat:35.08181, lon:128.83380, nx:94, ny:73,  stn:159, area:['부산'], wide:['부산'],
+  regLand:'11H20000', regTa:'11H20201'},
+ {id:'stjCY',    name:'신탄진 CY',addr:'한솔CSN 신탄진CY · 대전 대덕구 평촌동',
   lat:36.43015, lon:127.43320, nx:68, ny:102, stn:133, area:['대전'], wide:['대전'],
   regLand:'11C20000', regTa:'11C20401'},
- {id:'gsCY',     name:'군산 CY',  addr:'전북 군산시 서해로 194',
-  lat:35.97328, lon:126.57321, nx:53, ny:92,  stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도'],
+ {id:'gsCY',     name:'군산 CY',  addr:'하나티엘에스 · 전북 군산시 소룡동 (임해로 463)',
+  lat:35.97154, lon:126.63479, nx:54, ny:92,  stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도'],
   regLand:'11F10000', regTa:'11F10501'},
- {id:'asanCY',   name:'아산 CY',  addr:'충남 아산시 탕정면 탕정로 251',
-  lat:36.81562, lon:127.05930, nx:61, ny:110, stn:133, area:['아산'], wide:['충남','충청남도'],
-  regLand:'11C20000', regTa:'11C20301'},                                    // 대전·충남 / 아산
- {id:'uiwang',   name:'의왕',     addr:'경기 의왕시 오봉로 175',
-  lat:37.33365, lon:126.96242, nx:60, ny:122, stn:109, area:['의왕'], wide:['경기','경기도'],
-  regLand:'11B00000', regTa:'11B20601'}                                     // 서울·경기 / 수원
+ {id:'asanCY',   name:'아산 CY',  addr:'코닝정밀소재 1단지 · 충남 아산시 탕정면',
+  lat:36.81593, lon:127.05671, nx:61, ny:110, stn:133, area:['아산'], wide:['충남','충청남도'],
+  regLand:'11C20000', regTa:'11C20301'},
+ {id:'uiwang',   name:'의왕',     addr:'의왕ICD 제2터미널 · 경기 의왕시 이동 (오봉로 175)',
+  lat:37.33259, lon:126.96221, nx:60, ny:122, stn:109, area:['의왕'], wide:['경기','경기도'],
+  regLand:'11B00000', regTa:'11B20601'}
 ];
 // 본사 — 주간예보에만 표시 (폭염 현황표의 거점 열에는 들어가지 않음)
 const HQ_SITE={id:'hqSeoul', name:'본사(서울)', addr:'서울 중구 을지로 100',
@@ -579,22 +582,30 @@ async function collect(){
     return {ok:0,fail,demo:true};
   }
 
-  // ③ 폭염특보 — 관서 4곳 병렬 조회
-  LIVE.pending=[];
+  // ③ 폭염특보 — 거점이 속한 발표관서의 통보문을 매번 다시 읽어 갱신한다.
+  //    통보문을 받았으면 그 값이 정답이다('없음' 포함). 못 받은 관서만 체감온도 추정을 남긴다.
+  LIVE.pending=[]; LIVE.alertOk=0; LIVE.alertNg=0; LIVE.alertAt='';
   try{
     const stns=[...new Set(WX_SITES.map(s=>s.stn))];
     const res=await Promise.all(stns.map(st=>KMA.warnMsg(st).catch(()=>null)));
     stns.forEach((st,i)=>{
-      const r=res[i]; if(!r) return;
+      const r=res[i];
       const mine=WX_SITES.filter(s=>s.stn===st);
-      if(r.cur){
-        const m=parseHeatT6(r.cur.t6);
-        mine.forEach(s=>{ if(LIVE.sites[s.id]){
-          LIVE.sites[s.id].alert=m[s.id]; LIVE.sites[s.id].alertSrc='kma';
-          LIVE.sites[s.id].alertAt=String(r.cur.t5||r.cur.tmFc);
-        }});
+      if(!r || !r.cur){                                   // 통보문 미수신 → 추정값 유지
+        mine.forEach(s=>{ if(LIVE.sites[s.id]) LIVE.sites[s.id].alertSrc='est' });
+        LIVE.alertNg+=mine.length;
+        return;
       }
-      if(r.next){
+      const m=parseHeatT6(r.cur.t6);
+      const at=String(r.cur.t5||r.cur.tmFc||'');
+      if(at>LIVE.alertAt) LIVE.alertAt=at;
+      mine.forEach(s=>{ if(LIVE.sites[s.id]){
+        LIVE.sites[s.id].alert=m[s.id];                   // 발효 중인 값으로 교체
+        LIVE.sites[s.id].alertSrc='kma';
+        LIVE.sites[s.id].alertAt=at;
+      }});
+      LIVE.alertOk+=mine.length;
+      if(r.next){                                         // 발효 예정 안내
         const nm=parseHeatT6(r.next.t6);
         mine.forEach(s=>{
           const cur=LIVE.sites[s.id]?.alert||'없음';
@@ -602,7 +613,7 @@ async function collect(){
         });
       }
     });
-  }catch(e){ console.warn('폭염특보 조회 실패', e.message) }
+  }catch(e){ console.warn('폭염특보 조회 실패', e.message); LIVE.alertNg=WX_SITES.length }
 
   LIVE.at=at; return {ok,fail};
 }
@@ -879,6 +890,14 @@ function renderTop(){
   html+=line('중대경보','#7d1710')+line('경보','#c62828')+line('주의보','#b7791f');
   if(!onCnt) html+=`<div><b style="color:#1f9254">폭염특보 발효 없음</b> <span class="nm">전 거점 이상 없음</span></div>`;
   html+=`<div>최고 체감온도 <b style="color:#c62828"><em>${hot.f>-99?hot.f.toFixed(1)+'℃':'—'}</em></b> <span class="nm">${hot.n}</span></div>`;
+  if(LIVE.alertAt){
+    const x=LIVE.alertAt;
+    html+=`<div class="src">폭염특보 기준 <b>${+x.slice(4,6)}/${+x.slice(6,8)} ${x.slice(8,10)}:${x.slice(10,12)}</b> 발효 통보문`
+        + (LIVE.alertNg?` <span class="warn">· ${LIVE.alertNg}개소는 통보문 미수신으로 체감온도 추정</span>`:'')
+        + `</div>`;
+  }else if(LIVE.alertNg){
+    html+=`<div class="src"><span class="warn">기상청 특보 통보문을 받지 못해 체감온도로 추정한 값입니다</span></div>`;
+  }
   if(LIVE.pending&&LIVE.pending.length)
     html+='<div>발효 예정 '+LIVE.pending.map(p=>{
       const x=String(p.at);
@@ -912,7 +931,7 @@ function renderBoard(){
         <div class="i">${w?skyIcon(w.sky,w.pty):'—'}</div>
         <div class="t">${w?w.ta+'℃':'—'}</div>
         <div class="f">체감 <b>${w?w.feels.toFixed(1)+'℃':'—'}</b></div>
-        <div class="al">${lv==='없음'?'특보 없음':'폭염'+lv}</div>
+        <div class="al">${lv==='없음'?'특보 없음':'폭염'+lv}${w&&w.alertSrc==='est'?'<span class="est">추정</span>':''}</div>
       </div>
       ${cell('worker')}${cell('facility')}${cell('transport')}
     </div>`;
