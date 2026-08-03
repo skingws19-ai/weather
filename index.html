@@ -53,13 +53,6 @@ select{cursor:pointer}
   vertical-align:-1px;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .refbar .ref-t{font-size:12.5px;color:var(--navy);font-weight:700}
-/* 자료 출처 배지 — 어디서 받아온 값인지 새로고침 버튼 옆에 바로 보여준다 */
-.refbar .srcTag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;
-  padding:4px 10px;border-radius:999px;white-space:nowrap}
-.refbar .srcTag.wn{background:#e8f3ff;border:1px solid #9dc4ee;color:#1c4f86}
-.refbar .srcTag.mix{background:#fdf5e3;border:1px solid #e6cf9b;color:#6d4c11}
-.refbar .srcTag.api{background:#eef0f3;border:1px solid #c8ced6;color:#414a56}
-.refbar .srcTag.demo{background:#fdecec;border:1px solid #eeb4b4;color:#8c2f2f}
 .refbar .ref-hint{font-size:11.5px;color:var(--mut)}
 body.busy .panel,body.busy #sheet{opacity:.55;pointer-events:none;transition:opacity .15s}
 #netBar{background:#fdf5e3;border:1px solid #e6cf9b;border-left:4px solid #b7791f;
@@ -233,7 +226,6 @@ body.busy .panel,body.busy #sheet{opacity:.55;pointer-events:none;transition:opa
   <!-- 새로고침 (전체 공통) -->
   <div class="refbar">
     <button id="btnRef" onclick="refreshNow()">↻ 새로고침</button>
-    <span class="srcTag" id="srcTag"></span>
     <span class="ref-t" id="refTime"></span>
     <span class="sp"></span>
     <span class="ref-hint">기상현황 · 체감온도 · 폭염특보와 기준시각을 현재 시점으로 갱신합니다</span>
@@ -307,43 +299,41 @@ body.busy .panel,body.busy #sheet{opacity:.55;pointer-events:none;transition:opa
 const SITES=[
  {id:'gunsan',   name:'군산',     addr:'군산항 5부두 · 전북 군산시 소룡동 (서해로 194)',
   lat:35.97530, lon:126.59046, nx:53, ny:92,  stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도'],
-  regLand:'11F10000', regTa:'11F10501', wnuri:'5213072000'},
+  regLand:'11F10000', regTa:'11F10501'},
  {id:'janghang', name:'장항',     addr:'한솔제지 장항공장 · 충남 서천군 장항읍',
   lat:36.01051, lon:126.67883, nx:55, ny:93,  stn:133, area:['서천'], wide:['충남','충청남도'],
-  regLand:'11C20000', regTa:'11C20201', wnuri:'4477025000'},
+  regLand:'11C20000', regTa:'11C20201'},
  {id:'daejeon',  name:'대전',     addr:'한솔제지 대전공장 · 대전 대덕구 신일동',
   lat:36.43465, lon:127.40118, nx:68, ny:102, stn:133, area:['대전'], wide:['대전'],
-  regLand:'11C20000', regTa:'11C20401', wnuri:'3020058000'},
+  regLand:'11C20000', regTa:'11C20401'},
  {id:'cheonan',  name:'천안',     addr:'한솔제지 천안공장 · 충남 천안시 동남구 광덕면',
   lat:36.68945, lon:127.16029, nx:63, ny:108, stn:133, area:['천안'], wide:['충남','충청남도'],
-  regLand:'11C20000', regTa:'11C20101', wnuri:'3611039000'},
+  regLand:'11C20000', regTa:'11C20101'},
  {id:'sintanjin',name:'신탄진',   addr:'한솔제지 신탄진공장 · 대전 대덕구 신일동',
   lat:36.43321, lon:127.40752, nx:68, ny:102, stn:133, area:['대전'], wide:['대전'],
-  regLand:'11C20000', regTa:'11C20401', wnuri:'3023058000'},
+  regLand:'11C20000', regTa:'11C20401'},
  {id:'busanNP',  name:'부산신항', addr:'부산신항국제터미널 · 부산 강서구 성북동 (신항남로 330)',
   lat:35.08181, lon:128.83380, nx:94, ny:73,  stn:159, area:['부산'], wide:['부산'],
-  regLand:'11H20000', regTa:'11H20201', wnuri:'4812965000'},
+  regLand:'11H20000', regTa:'11H20201'},
  {id:'stjCY',    name:'신탄진 CY',addr:'한솔CSN 신탄진CY · 대전 대덕구 평촌동',
   lat:36.43015, lon:127.43320, nx:68, ny:102, stn:133, area:['대전'], wide:['대전'],
-  regLand:'11C20000', regTa:'11C20401', wnuri:'3023057000'},
+  regLand:'11C20000', regTa:'11C20401'},
  {id:'gsCY',     name:'군산 CY',  addr:'하나티엘에스 · 전북 군산시 소룡동 (임해로 463)',
   lat:35.97154, lon:126.63479, nx:54, ny:92,  stn:146, area:['군산'], wide:['전북','전라북도','전북특별자치도'],
-  regLand:'11F10000', regTa:'11F10501', wnuri:'5213072000'},
+  regLand:'11F10000', regTa:'11F10501'},
  {id:'asanCY',   name:'아산 CY',  addr:'코닝정밀소재 1단지 · 충남 아산시 탕정면',
   lat:36.81593, lon:127.05671, nx:61, ny:110, stn:133, area:['아산'], wide:['충남','충청남도'],
-  regLand:'11C20000', regTa:'11C20301', wnuri:'4420033000'},
+  regLand:'11C20000', regTa:'11C20301'},
  {id:'uiwang',   name:'의왕',     addr:'의왕ICD 제2터미널 · 경기 의왕시 이동 (오봉로 175)',
   lat:37.33259, lon:126.96221, nx:60, ny:122, stn:109, area:['의왕'], wide:['경기','경기도'],
-  regLand:'11B00000', regTa:'11B20601', wnuri:'4141052000'}
+  regLand:'11B00000', regTa:'11B20601'}
 ];
 // 본사 — 주간예보에만 표시 (폭염 현황표의 거점 열에는 들어가지 않음)
 const HQ_SITE={id:'hqSeoul', name:'본사(서울)', addr:'서울 중구 을지로 100',
   lat:37.56566, lon:126.98813, nx:60, ny:127, stn:109, area:['서울'], wide:['서울'],
   regLand:'11B00000', regTa:'11B10101'};
 // 기상 수집 대상 = 본사 + 10개 거점
-/* 주간예보 영역을 없애면서 본사(서울)는 화면에 나오지 않게 되었다.
-   조회 대상에서도 빼서 불필요한 기상청 호출을 줄인다. (HQ_SITE 정의는 참고용으로 남겨둠) */
-const WX_SITES=[...SITES];
+const WX_SITES=[HQ_SITE, ...SITES];
 
 const ALERT_LV=['없음','주의보','경보','중대경보'];
 const ALERT_CLS={'없음':'a0','주의보':'a1','경보':'a2','중대경보':'a3'};
@@ -367,7 +357,7 @@ const FB='https://weather-5eb52-default-rtdb.asia-southeast1.firebasedatabase.ap
 /* ── 빌드 표시 ────────────────────────────────────────────────
    화면 좌상단에 이 숫자가 보입니다. version.json 의 값과 다르면
    브라우저가 예전 화면을 붙들고 있다는 뜻이라 자동으로 한 번 새로 받습니다. */
-const BUILD='2026-07-31.8-wnuri';
+const BUILD='2026-07-31.5';
 
 const K={db:'heatDB',log:'heatLOG',cfg:'heatCFG',ses:'heatSES'};
 let DB={}, LOG=[], SES=null;
@@ -435,20 +425,6 @@ const KMA={
          + new URLSearchParams({serviceKey:CFG.key,dataType:'JSON',...q,...bust});
   },
   get(u){ return fetch(u,{cache:'no-store'}) },
-
-  /* 날씨누리 — 1순위 자료원.
-     기상청 홈페이지가 화면에 띄우는 실제 관측값이라 격자 평균값보다 정확하고,
-     10분 단위로 갱신되며 폭염특보까지 문장으로 함께 온다.
-     공식 API가 아니므로 실패하면 호출한 쪽에서 격자 API로 대체한다. */
-  async wnuri(code){
-    if(!code) return null;
-    if(!(location.protocol==='http:'||location.protocol==='https:')) return null;
-    const r=await this.get(`/api/wnuri?code=${encodeURIComponent(code)}&_t=${Date.now()}`);
-    if(!r.ok) return null;
-    const j=await r.json();
-    if(!j || !j.ok || typeof j.ta!=='number' || typeof j.rh!=='number') return null;
-    return j;
-  },
   /* 초단기실황 — 정시 관측이 약 40분 뒤 공개된다.
      한 번 성공한 기준시각을 기억해 나머지 거점은 1회 호출로 끝낸다. */
   _ncstAt:null,
@@ -575,122 +551,75 @@ const DEMO={
 
 function fillDemo(at){
   WX_SITES.forEach(s=>{const d=DEMO[s.id]||{sky:3,pty:0,ta:31.0,rh:70,wsd:2.0};
-    LIVE.sites[s.id]={...d,feels:feels(d.ta,d.rh,d.wsd),alert:heatAlert(feels(d.ta,d.rh,d.wsd)),src:'demo'}});
-  LIVE.at=at; LIVE.pending=[]; LIVE.obsAt=null; LIVE.wnOk=0; LIVE.wnAt='';
+    LIVE.sites[s.id]={...d,feels:feels(d.ta,d.rh,d.wsd),alert:heatAlert(feels(d.ta,d.rh,d.wsd))}});
+  LIVE.at=at; LIVE.pending=[]; LIVE.obsAt=null;
 }
 
-/* 자료를 모으는 순서
-   ① 날씨누리 (1순위)  — 되는 거점은 여기서 끝난다. 기상청 API 는 아예 부르지 않는다.
-   ② SKY 보완         — 날씨누리에는 날씨 아이콘 정보가 없어 격자에서 그것만 가져온다.
-   ③ 기상청 격자 API   — ①이 실패한 거점만 조회한다 (예비).
-   ④ 폭염특보 통보문   — ③으로 받은 거점만 필요하다. 날씨누리 거점은 특보가 같이 왔다. */
 async function collect(){
   const at=kstNow();
   NETFAIL=null; KMA._ncstAt=null;
   if(CFG.mode!=='live'||!CFG.key){ fillDemo(at); return {ok:0,fail:0,demo:true} }
   let ok=0,fail=0, lastErr='';
-  const HEAT=['없음','주의보','경보','중대경보'];
 
-  // ── ① 날씨누리 (1순위) ──────────────────────────────────────
-  //    같은 지역코드를 쓰는 거점(군산/군산CY 등)은 한 번만 부른다.
-  LIVE.wnOk=0; LIVE.wnAt=''; LIVE.obsAt=null;
-  const done=new Set();                                  // 날씨누리로 값을 채운 거점
-  const byCode={};
-  WX_SITES.forEach(s=>{ if(s.wnuri) (byCode[s.wnuri]=byCode[s.wnuri]||[]).push(s) });
-  await Promise.all(Object.keys(byCode).map(async code=>{
-    let j=null;
-    try{ j=await KMA.wnuri(code) }catch(e){ console.warn('날씨누리',code,e.message) }
-    if(!j) return;
-    const ws=(typeof j.ws==='number')?j.ws:1.0;
-    const f =feels(j.ta,j.rh,ws);                        // 체감온도는 우리 공식으로 계산
-    byCode[code].forEach(s=>{
-      LIVE.sites[s.id]={ sky:1, pty:0, ta:j.ta, rh:j.rh, wsd:ws, feels:f,
-                         alert:HEAT[j.heat]||'없음', alertSrc:'wnuri', src:'wnuri',
-                         obsAt:j.at||null, warnText:j.warnText||'' };
-      done.add(s.id); LIVE.wnOk++;
-    });
-    if(j.at && j.at>LIVE.wnAt) LIVE.wnAt=j.at;
+  // ① 같은 격자를 쓰는 거점은 한 번만 조회한다 (호출 수 최소화)
+  const grids={};
+  WX_SITES.forEach(s=>{ const k=s.nx+','+s.ny; (grids[k]=grids[k]||[]).push(s) });
+  const keys=Object.keys(grids);
+  const g0=grids[keys[0]][0];
+  try{ await KMA.ncst(g0.nx,g0.ny) }catch(e){}      // 실황 기준시각 먼저 확정
+
+  await Promise.all(keys.map(async k=>{
+    const [nx,ny]=k.split(',').map(Number);
+    const mine=grids[k];
+    try{
+      const [n,sk]=await Promise.all([KMA.ncst(nx,ny), KMA.sky(nx,ny).catch(()=>1)]);
+      const f=feels(n.T1H,n.REH,n.WSD);
+      if(n._at) LIVE.obsAt=n._at;                 // 실제 관측시각 (매시 정시)
+      mine.forEach(s=>{ LIVE.sites[s.id]={sky:sk, pty:n.PTY||0, ta:n.T1H, rh:n.REH,
+                                          wsd:n.WSD, feels:f, alert:heatAlert(f)} });
+      ok+=mine.length;
+    }catch(e){ fail+=mine.length; lastErr=e.message; console.warn(k,e.message) }
   }));
-  ok+=LIVE.wnOk;
-
-  // ── ② SKY 보완 (날씨 아이콘) ────────────────────────────────
-  //    실패해도 그냥 '맑음'으로 두면 되므로 결과를 기다리되 오류는 무시한다.
-  if(done.size){
-    const skyGrids={};
-    WX_SITES.forEach(s=>{ if(done.has(s.id)) (skyGrids[s.nx+','+s.ny]=skyGrids[s.nx+','+s.ny]||[]).push(s) });
-    await Promise.all(Object.keys(skyGrids).map(async k=>{
-      const [nx,ny]=k.split(',').map(Number);
-      const sk=await KMA.sky(nx,ny).catch(()=>null);
-      if(sk!=null) skyGrids[k].forEach(s=>{ if(LIVE.sites[s.id]) LIVE.sites[s.id].sky=sk });
-    }));
-  }
-
-  // ── ③ 기상청 격자 API (예비) ────────────────────────────────
-  //    날씨누리가 값을 못 준 거점만 조회한다. 전부 성공했으면 이 단계는 통째로 건너뛴다.
-  const rest=WX_SITES.filter(s=>!done.has(s.id));
-  if(rest.length){
-    const grids={};
-    rest.forEach(s=>{ const k=s.nx+','+s.ny; (grids[k]=grids[k]||[]).push(s) });
-    const keys=Object.keys(grids);
-    const g0=grids[keys[0]][0];
-    try{ await KMA.ncst(g0.nx,g0.ny) }catch(e){}         // 실황 기준시각 먼저 확정
-    await Promise.all(keys.map(async k=>{
-      const [nx,ny]=k.split(',').map(Number);
-      const mine=grids[k];
-      try{
-        const [n,sk]=await Promise.all([KMA.ncst(nx,ny), KMA.sky(nx,ny).catch(()=>1)]);
-        const f=feels(n.T1H,n.REH,n.WSD);
-        if(n._at) LIVE.obsAt=n._at;                      // 격자 관측시각 (매시 정시)
-        mine.forEach(s=>{ LIVE.sites[s.id]={sky:sk, pty:n.PTY||0, ta:n.T1H, rh:n.REH,
-                                            wsd:n.WSD, feels:f, alert:heatAlert(f), src:'api'} });
-        ok+=mine.length;
-      }catch(e){ fail+=mine.length; lastErr=e.message; console.warn(k,e.message) }
-    }));
-  }
-
-  if(ok===0){                                            // 두 자료원 모두 실패 → 데모로 전환
+  if(ok===0){                                       // 전부 실패 → 데모로 전환
     NETFAIL = /SERVICE|KEY|등록되지|LIMITED/i.test(lastErr) ? 'key'
             : (CFG.proxy ? 'proxy' : 'cors');
-    NETFAIL_MSG = lastErr || '날씨누리·기상청 API 모두 응답 없음';
+    NETFAIL_MSG = lastErr;
     fillDemo(at);
     return {ok:0,fail,demo:true};
   }
 
-  // ── ④ 폭염특보 통보문 (격자 API 거점 전용) ──────────────────
-  //    날씨누리 거점은 특보가 이미 함께 왔으므로 건드리지 않는다.
-  LIVE.pending=[]; LIVE.alertOk=LIVE.wnOk; LIVE.alertNg=0; LIVE.alertAt='';
-  const apiSites=WX_SITES.filter(s=>LIVE.sites[s.id]?.src==='api');
-  if(apiSites.length){
-    try{
-      const stns=[...new Set(apiSites.map(s=>s.stn))];
-      const res=await Promise.all(stns.map(st=>KMA.warnMsg(st).catch(()=>null)));
-      stns.forEach((st,i)=>{
-        const r=res[i];
-        const mine=apiSites.filter(s=>s.stn===st);
-        if(!r || !r.cur){                                // 통보문 미수신 → 추정값 유지
-          mine.forEach(s=>{ if(LIVE.sites[s.id]) LIVE.sites[s.id].alertSrc='est' });
-          LIVE.alertNg+=mine.length;
-          return;
-        }
-        const m=parseHeatT6(r.cur.t6);
-        const t=String(r.cur.t5||r.cur.tmFc||'');
-        if(t>LIVE.alertAt) LIVE.alertAt=t;
-        mine.forEach(s=>{ if(LIVE.sites[s.id]){
-          LIVE.sites[s.id].alert=m[s.id];                // 발효 중인 값으로 교체
-          LIVE.sites[s.id].alertSrc='kma';
-          LIVE.sites[s.id].alertAt=t;
-        }});
-        LIVE.alertOk+=mine.length;
-        if(r.next){                                      // 발효 예정 안내
-          const nm=parseHeatT6(r.next.t6);
-          mine.forEach(s=>{
-            const cur=LIVE.sites[s.id]?.alert||'없음';
-            if(nm[s.id]!==cur) LIVE.pending.push({name:s.name, from:cur, to:nm[s.id], at:String(r.next.t5)});
-          });
-        }
-      });
-    }catch(e){ console.warn('폭염특보 조회 실패', e.message); LIVE.alertNg=apiSites.length }
-  }
+  // ③ 폭염특보 — 거점이 속한 발표관서의 통보문을 매번 다시 읽어 갱신한다.
+  //    통보문을 받았으면 그 값이 정답이다('없음' 포함). 못 받은 관서만 체감온도 추정을 남긴다.
+  LIVE.pending=[]; LIVE.alertOk=0; LIVE.alertNg=0; LIVE.alertAt='';
+  try{
+    const stns=[...new Set(WX_SITES.map(s=>s.stn))];
+    const res=await Promise.all(stns.map(st=>KMA.warnMsg(st).catch(()=>null)));
+    stns.forEach((st,i)=>{
+      const r=res[i];
+      const mine=WX_SITES.filter(s=>s.stn===st);
+      if(!r || !r.cur){                                   // 통보문 미수신 → 추정값 유지
+        mine.forEach(s=>{ if(LIVE.sites[s.id]) LIVE.sites[s.id].alertSrc='est' });
+        LIVE.alertNg+=mine.length;
+        return;
+      }
+      const m=parseHeatT6(r.cur.t6);
+      const at=String(r.cur.t5||r.cur.tmFc||'');
+      if(at>LIVE.alertAt) LIVE.alertAt=at;
+      mine.forEach(s=>{ if(LIVE.sites[s.id]){
+        LIVE.sites[s.id].alert=m[s.id];                   // 발효 중인 값으로 교체
+        LIVE.sites[s.id].alertSrc='kma';
+        LIVE.sites[s.id].alertAt=at;
+      }});
+      LIVE.alertOk+=mine.length;
+      if(r.next){                                         // 발효 예정 안내
+        const nm=parseHeatT6(r.next.t6);
+        mine.forEach(s=>{
+          const cur=LIVE.sites[s.id]?.alert||'없음';
+          if(nm[s.id]!==cur) LIVE.pending.push({name:s.name, from:cur, to:nm[s.id], at:String(r.next.t5)});
+        });
+      }
+    });
+  }catch(e){ console.warn('폭염특보 조회 실패', e.message); LIVE.alertNg=WX_SITES.length }
 
   LIVE.at=at; return {ok,fail};
 }
@@ -926,34 +855,16 @@ function guard(fn,label){
   }
 }
 
-/* 자료 출처 배지 — 거점별로 어느 자료원에서 값을 받았는지 세어 보여준다.
-   날씨누리가 막히면 자동으로 기상청 API 로 넘어가므로, 그 사실이 눈에 보여야 한다. */
-function renderSrcTag(){
-  const el=document.getElementById('srcTag'); if(!el) return;
-  const n={wnuri:0,api:0,demo:0};
-  WX_SITES.forEach(s=>{ const k=LIVE.sites[s.id]?.src; if(k&&n[k]!==undefined) n[k]++ });
-  const tot=n.wnuri+n.api+n.demo;
-  if(!tot){ el.className='srcTag'; el.textContent=''; return }
-  if(n.demo){ el.className='srcTag demo'; el.textContent='● 샘플자료 (실시간 조회 실패)'; return }
-  const wt=LIVE.wnAt?` ${LIVE.wnAt}`:'';
-  if(n.api===0){ el.className='srcTag wn';  el.textContent=`● 날씨누리${wt} · 전 거점`; return }
-  if(n.wnuri===0){ el.className='srcTag api'; el.textContent='● 기상청 API (격자) · 전 거점'; return }
-  el.className='srcTag mix';
-  el.textContent=`● 날씨누리${wt} ${n.wnuri}곳 · 기상청 API ${n.api}곳`;
-}
-
 function renderTop(){
   const t=LIVE.at?`${LIVE.at.getFullYear()}.${pad(LIVE.at.getMonth()+1)}.${pad(LIVE.at.getDate())} ${LIVE.at.getHours()}시 기준`:'';   // LIVE.at 은 KST
   document.getElementById('sumTitle').textContent='폭염현황'+(t?`  (${t})`:'');
-  renderSrcTag();
   const rt=document.getElementById('refTime');
   if(rt && LIVE.at){
     /* 초까지 표시한다 — 초단기실황은 매시 정시 1회 관측이라 같은 시간대에
        새로고침하면 기온이 그대로다. 갱신 시각이 바뀌는 것으로 정상 동작을 확인할 수 있다. */
     const hm=`${pad(LIVE.at.getHours())}:${pad(LIVE.at.getMinutes())}:${pad(LIVE.at.getSeconds())}`;
-    const usesApi=WX_SITES.some(s=>LIVE.sites[s.id]?.src==='api');
-    rt.innerHTML = (usesApi && LIVE.obsAt)
-      ? `격자 관측 <b>${LIVE.obsAt}</b> (매시 정시) · 갱신 ${hm}`
+    rt.innerHTML = LIVE.obsAt
+      ? `기상청 관측 <b>${LIVE.obsAt}</b> (매시 정시) · 갱신 ${hm}`
       : `갱신 ${hm}`;
   }
 
